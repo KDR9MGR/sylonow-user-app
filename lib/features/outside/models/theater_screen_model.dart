@@ -7,6 +7,8 @@ class TheaterScreen {
   final int capacity;
   final List<String>? amenities;
   final double hourlyRate;
+  final double? basePrice; // Base price from theater_time_slots (actual selling price)
+  final double? comparePrice; // Compare price from theater_time_slots (original price for comparison)
   final bool? isActive;
   final DateTime? createdAt;
   final DateTime? updatedAt;
@@ -37,6 +39,8 @@ class TheaterScreen {
     required this.capacity,
     this.amenities,
     required this.hourlyRate,
+    this.basePrice,
+    this.comparePrice,
     this.isActive,
     this.createdAt,
     this.updatedAt,
@@ -69,6 +73,12 @@ class TheaterScreen {
           ? List<String>.from(json['amenities'])
           : null,
       hourlyRate: (json['hourly_rate'] as num).toDouble(),
+      basePrice: json['base_price'] != null
+          ? (json['base_price'] as num).toDouble()
+          : null,
+      comparePrice: json['compare_price'] != null
+          ? (json['compare_price'] as num).toDouble()
+          : null,
       isActive: json['is_active'] as bool?,
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
@@ -134,6 +144,8 @@ class TheaterScreen {
       'capacity': capacity,
       'amenities': amenities,
       'hourly_rate': hourlyRate,
+      'base_price': basePrice,
+      'compare_price': comparePrice,
       'is_active': isActive,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
@@ -158,6 +170,8 @@ class TheaterScreen {
     int? capacity,
     List<String>? amenities,
     double? hourlyRate,
+    double? basePrice,
+    double? comparePrice,
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -186,6 +200,8 @@ class TheaterScreen {
       capacity: capacity ?? this.capacity,
       amenities: amenities ?? this.amenities,
       hourlyRate: hourlyRate ?? this.hourlyRate,
+      basePrice: basePrice ?? this.basePrice,
+      comparePrice: comparePrice ?? this.comparePrice,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,

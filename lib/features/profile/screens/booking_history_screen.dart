@@ -820,7 +820,7 @@ class _BookingHistoryScreenState extends ConsumerState<BookingHistoryScreen> {
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                onPressed: () => context.push('/home'),
+                onPressed: () => context.push('/inside'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppTheme.primaryColor,
                   foregroundColor: Colors.white,

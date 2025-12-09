@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sylonow_user/core/utils/price_rounding.dart';
 import 'package:sylonow_user/features/home/models/vendor_model.dart';
 
 part 'service_listing_model.freezed.dart';
@@ -125,18 +126,22 @@ extension ServiceListingModelExtensions on ServiceListingModel {
     if (offerPrice != null && freeServiceKm != null && extraChargesPerKm != null) {
       final extraDistance = math.max(0.0, distance - (freeServiceKm ?? 0.0));
       final extraCharges = extraDistance * (extraChargesPerKm ?? 0.0);
-      dynamicPrice = (offerPrice ?? 0.0) + extraCharges;
+      final calculatedPrice = (offerPrice ?? 0.0) + extraCharges;
+      // Apply price rounding to ensure prices end with 49 or 99
+      dynamicPrice = PriceRounding.applyFinalRounding(calculatedPrice);
     } else if (originalPrice != null && freeServiceKm != null && extraChargesPerKm != null) {
       final extraDistance = math.max(0.0, distance - (freeServiceKm ?? 0.0));
       final extraCharges = extraDistance * (extraChargesPerKm ?? 0.0);
-      dynamicPrice = (originalPrice ?? 0.0) + extraCharges;
+      final calculatedPrice = (originalPrice ?? 0.0) + extraCharges;
+      // Apply price rounding to ensure prices end with 49 or 99
+      dynamicPrice = PriceRounding.applyFinalRounding(calculatedPrice);
     }
 
     return copyWith(
       distanceKm: double.parse(distance.toStringAsFixed(2)),
       calculatedPrice: dynamicPrice,
       adjustedOfferPrice: dynamicPrice,
-      adjustedOriginalPrice: originalPrice,
+      adjustedOriginalPrice: originalPrice != null ? PriceRounding.applyFinalRounding(originalPrice!) : null,
       isPriceAdjusted: dynamicPrice != null && dynamicPrice > (offerPrice ?? originalPrice ?? 0.0),
     );
   }

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sylonow_user/core/theme/app_theme.dart';
+import 'package:sylonow_user/core/utils/price_rounding.dart';
 import 'package:sylonow_user/features/theater/models/occasion_model.dart';
 import 'package:sylonow_user/features/theater/models/selected_add_on_model.dart';
 import 'package:sylonow_user/features/theater/providers/theater_providers.dart';
@@ -501,11 +502,15 @@ class _TheaterCheckoutScreenState extends ConsumerState<TheaterCheckoutScreen> {
 
   double get _gstAmount {
     // GST 18% for entertainment services in India
-    return _taxableAmount * 0.18;
+    final gstRaw = _taxableAmount * 0.18;
+    // Apply rounding to ensure GST amount ends with 49 or 99
+    return PriceRounding.applyFinalRounding(gstRaw);
   }
 
   double get _totalAmount {
-    final total = _taxableAmount + _gstAmount;
+    final totalRaw = _taxableAmount + _gstAmount;
+    // Apply rounding to ensure total amount ends with 49 or 99
+    final total = PriceRounding.applyFinalRounding(totalRaw);
     debugPrint(
       '🎯 Total amount calculation: ₹$total (taxable: ₹$_taxableAmount, gst: ₹$_gstAmount)',
     );
@@ -514,7 +519,9 @@ class _TheaterCheckoutScreenState extends ConsumerState<TheaterCheckoutScreen> {
 
   // 60% advance payment calculation
   double get _advanceAmount {
-    final advance = _totalAmount * 0.6;
+    final advanceRaw = _totalAmount * 0.6;
+    // Apply rounding to ensure advance payment ends with 49 or 99
+    final advance = PriceRounding.applyFinalRounding(advanceRaw);
     debugPrint(
       '💰 Advance payment calculation: 60% of ₹$_totalAmount = ₹$advance',
     );
@@ -523,13 +530,18 @@ class _TheaterCheckoutScreenState extends ConsumerState<TheaterCheckoutScreen> {
 
   // Remaining amount after advance payment
   double get _remainingAmount {
-    return _totalAmount - _advanceAmount;
+    final remainingRaw = _totalAmount - _advanceAmount;
+    // Apply rounding to ensure remaining amount ends with 49 or 99
+    return PriceRounding.applyFinalRounding(remainingRaw);
   }
 
   double get _savings {
     // Show savings for user psychology
-    double originalPrice = _slotPrice * 1.2; // Assume 20% markup on original
-    return originalPrice - _slotPrice;
+    double originalPriceRaw = _slotPrice * 1.2; // Assume 20% markup on original
+    final originalPrice = PriceRounding.applyFinalRounding(originalPriceRaw);
+    final savingsRaw = originalPrice - _slotPrice;
+    // Apply rounding to savings display
+    return PriceRounding.applyFinalRounding(savingsRaw);
   }
 
   Future<void> _notifyVendor(String bookingId) async {

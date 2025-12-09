@@ -1,4 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sylonow_user/core/utils/price_rounding.dart';
 import '../models/time_slot_model.dart';
 
 class TheaterScreenDetailService {
@@ -58,11 +59,31 @@ class TheaterScreenDetailService {
 
       print('Found ${bookedSlotIds.length} booked slots for date: $date');
 
-      // Step 4: Convert to TimeSlotModel with booking status
+      // Step 4: Fetch admin settings for price calculation
+      final settings = await _supabase
+          .from('admin_settings')
+          .select('setting_key, setting_value')
+          .inFilter('setting_key', ['percent_tax']);
+
+      double percentTax = 3.54;
+      for (final setting in settings) {
+        if (setting['setting_key'] == 'percent_tax') {
+          percentTax = (setting['setting_value'] as num).toDouble();
+        }
+      }
+
+      // Step 5: Convert to TimeSlotModel with booking status and calculated prices
       final timeSlots = timeSlotsResponse.map((slotData) {
         final isBooked = bookedSlotIds.contains(slotData['id'] as String);
+        final rawBasePrice = (slotData['base_price'] as num?)?.toDouble() ?? 0.0;
+
+        // Calculate final price: base + 19 + (base * tax%)
+        final calculatedPrice = rawBasePrice + 19 + (rawBasePrice * percentTax / 100);
+        final roundedFinalPrice = PriceRounding.applyFinalRounding(calculatedPrice);
+
         return TimeSlotModel.fromJson({
           ...slotData,
+          'base_price': roundedFinalPrice, // Use calculated final price
           'is_booked': isBooked,
         });
       }).toList();

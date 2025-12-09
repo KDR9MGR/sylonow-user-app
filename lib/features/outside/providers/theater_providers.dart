@@ -59,14 +59,19 @@ final filteredTheaterScreensProvider = Provider.family<List<TheaterScreen>, Filt
   final screens = ref.watch(theaterScreensProvider).value ?? [];
 
   var filteredScreens = screens.where((screen) {
+    // Filter out screens with no pricing (no time slots added)
+    // This ensures the screen has at least one time slot in theater_time_slots table
+    final hasValidPrice = screen.basePrice != null && screen.basePrice! > 0;
+
     // Search filter - searches in screen name, theater name, and description
     final matchesSearch = params.searchQuery.isEmpty ||
         screen.screenName.toLowerCase().contains(params.searchQuery.toLowerCase()) ||
         (screen.theaterName?.toLowerCase().contains(params.searchQuery.toLowerCase()) ?? false) ||
         (screen.description?.toLowerCase().contains(params.searchQuery.toLowerCase()) ?? false);
 
-    // Price filter
-    final matchesPrice = screen.hourlyRate >= params.minPrice && screen.hourlyRate <= params.maxPrice;
+    // Price filter - use basePrice if available, otherwise use hourlyRate
+    final priceToCheck = screen.basePrice ?? screen.hourlyRate;
+    final matchesPrice = priceToCheck >= params.minPrice && priceToCheck <= params.maxPrice;
 
     // Category filter
     final matchesCategory = params.selectedCategories.isEmpty ||
@@ -75,14 +80,22 @@ final filteredTheaterScreensProvider = Provider.family<List<TheaterScreen>, Filt
     // Distance filter - now uses actual distance data from location-based query
     final matchesDistance = screen.distanceKm == null || screen.distanceKm! <= params.maxDistance;
 
-    return matchesSearch && matchesPrice && matchesCategory && matchesDistance;
+    return hasValidPrice && matchesSearch && matchesPrice && matchesCategory && matchesDistance;
   }).toList();
 
-  // Apply sorting
+  // Apply sorting - use basePrice if available, otherwise use hourlyRate
   if (params.selectedSort == 'high_to_low') {
-    filteredScreens.sort((a, b) => b.hourlyRate.compareTo(a.hourlyRate));
+    filteredScreens.sort((a, b) {
+      final priceA = a.basePrice ?? a.hourlyRate;
+      final priceB = b.basePrice ?? b.hourlyRate;
+      return priceB.compareTo(priceA);
+    });
   } else if (params.selectedSort == 'low_to_high') {
-    filteredScreens.sort((a, b) => a.hourlyRate.compareTo(b.hourlyRate));
+    filteredScreens.sort((a, b) {
+      final priceA = a.basePrice ?? a.hourlyRate;
+      final priceB = b.basePrice ?? b.hourlyRate;
+      return priceA.compareTo(priceB);
+    });
   }
 
   return filteredScreens;

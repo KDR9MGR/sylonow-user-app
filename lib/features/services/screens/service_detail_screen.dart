@@ -15,6 +15,7 @@ import '../../../core/providers/welcome_providers.dart';
 import '../../../core/services/image_upload_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/price_calculator.dart';
+import '../../../core/utils/price_rounding.dart';
 import '../../../core/widgets/custom_shimmer.dart';
 import '../../booking/screens/checkout_screen.dart';
 import '../../address/providers/address_providers.dart';
@@ -1314,7 +1315,9 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
     debugPrint('Adding non-customizable addon: ${addon.name}');
 
     // Calculate total price including transaction fee (same as what user sees in UI)
-    final totalPriceWithFees = addon.price + (addon.price * 0.0354);
+    final totalPriceWithFeesRaw = addon.price + (addon.price * 0.0354);
+    // Apply rounding to ensure add-on prices end with 49 or 99
+    final totalPriceWithFees = PriceRounding.applyFinalRounding(totalPriceWithFeesRaw);
 
     // Store addon data with default values
     setState(() {
@@ -1486,7 +1489,9 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                                   final characterCount = value.length;
                                   final basePrice = characterCount * addon.discountPrice;
                                   // Add transaction fee (3.54%) but no convenience fee for add-ons
-                                  calculatedPrice = basePrice + (basePrice * 0.0354);
+                                  final basePriceWithFeesRaw = basePrice + (basePrice * 0.0354);
+                                  // Apply rounding to ensure add-on prices end with 49 or 99
+                                  calculatedPrice = PriceRounding.applyFinalRounding(basePriceWithFeesRaw);
                                 });
                               },
                               decoration: InputDecoration(

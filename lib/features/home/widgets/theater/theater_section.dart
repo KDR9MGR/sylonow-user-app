@@ -337,7 +337,7 @@ class _TheaterSectionState extends ConsumerState<TheaterSection>
                 child: hasImages && currentImage != null
                     ? CachedNetworkImage(
                         imageUrl: currentImage,
-                        fit: BoxFit.fill,
+                        fit: BoxFit.cover,
                         // Optimized caching configuration
                         memCacheWidth: 800, // Limit memory cache size
                         memCacheHeight: 400,
@@ -484,7 +484,9 @@ class _TheaterSectionState extends ConsumerState<TheaterSection>
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '₹${screen.hourlyRate.round()}/hr',
+                            screen.hourlyRate > 0
+                                ? 'Starts from ₹${screen.hourlyRate.round()}'
+                                : 'View Prices',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 16,

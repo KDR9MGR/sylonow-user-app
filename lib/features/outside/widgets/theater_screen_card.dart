@@ -16,12 +16,13 @@ class TheaterScreenCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // The hourlyRate from screen already includes tax (calculated by database)
-    // No need for frontend calculation anymore
-    final basePrice = screen.hourlyRate;
-    final discountedPrice = basePrice;
-    final originalPrice = basePrice;
-    final discountAmount = 0.0;
+    // Use basePrice from time slots (actual selling price shown in green tag)
+    // Use comparePrice for the strikethrough original price
+    final actualPrice = screen.basePrice ?? screen.hourlyRate;
+    final compareAtPrice = screen.comparePrice;
+    final discountAmount = compareAtPrice != null && compareAtPrice > actualPrice
+        ? (compareAtPrice - actualPrice)
+        : 0.0;
 
     return GestureDetector(
       onTap: () {
@@ -45,10 +46,9 @@ class TheaterScreenCard extends StatelessWidget {
 
             // Content Section
             _buildContentSection(
-              discountedPrice,
-              originalPrice,
+              actualPrice,
+              compareAtPrice,
               discountAmount,
-              basePrice,
             ),
           ],
         ),
@@ -88,43 +88,52 @@ class TheaterScreenCard extends StatelessWidget {
                       )
                     : Icon(Icons.movie, size: 32, color: Colors.grey[600]),
               ),
-              // Theater name chip overlay (top left)
+              // Black to transparent gradient (bottom to top)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 80,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.8),
+                        Colors.black.withValues(alpha: 0.6),
+                        Colors.black.withValues(alpha: 0.3),
+                        Colors.transparent,
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              // Theater name overlay (bottom, over gradient)
               if (screen.theaterName != null && screen.theaterName!.isNotEmpty)
                 Positioned(
-                  top: 6,
-                  left: 6,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.3),
-                        width: 0.5,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.store,
-                          size: 10,
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
+                  bottom: 8,
+                  left: 8,
+                  right: 8,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                     
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
                           screen.theaterName!,
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 9,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
                             fontFamily: 'Okra',
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
             ],
@@ -135,10 +144,9 @@ class TheaterScreenCard extends StatelessWidget {
   }
 
   Widget _buildContentSection(
-    double discountedPrice,
-    double originalPrice,
+    double actualPrice,
+    double? compareAtPrice,
     double discountAmount,
-    double basePrice,
   ) {
     return Expanded(
       flex: 3,
@@ -148,9 +156,11 @@ class TheaterScreenCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildPricingSection(discountedPrice, originalPrice),
-            const SizedBox(height: 2),
-            _buildDiscountSection(discountAmount),
+            _buildPricingSection(actualPrice, compareAtPrice),
+            if (discountAmount > 0) ...[
+              const SizedBox(height: 2),
+              _buildDiscountSection(discountAmount),
+            ],
             _buildScreenDetailsSection(),
           ],
         ),
@@ -158,11 +168,13 @@ class TheaterScreenCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPricingSection(double discountedPrice, double originalPrice) {
+  Widget _buildPricingSection(double actualPrice, double? compareAtPrice) {
+    final hasDiscount = compareAtPrice != null && compareAtPrice > actualPrice;
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Green Price Tag
+        // Green Price Tag (actual selling price)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
@@ -174,7 +186,7 @@ class TheaterScreenCard extends StatelessWidget {
             ),
           ),
           child: Text(
-            '₹${discountedPrice.round()}',
+            '₹${actualPrice.round()}',
             style: const TextStyle(
               color: Colors.white,
               fontSize: 12,
@@ -183,19 +195,22 @@ class TheaterScreenCard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: 4),
-        // Original Price (Strikethrough)
-        Text(
-          '₹${originalPrice.round()}',
-          style: const TextStyle(
-            color: Color(0xFF505661),
-            fontSize: 12,
-            fontWeight: FontWeight.normal,
-            fontFamily: 'Okra',
-            decoration: TextDecoration.lineThrough,
-            decorationColor: Color(0xFF505661),
+        // Only show compare price if there's a discount
+        if (hasDiscount) ...[
+          const SizedBox(width: 4),
+          // Compare Price (Strikethrough)
+          Text(
+            '₹${compareAtPrice!.round()}',
+            style: const TextStyle(
+              color: Color(0xFF505661),
+              fontSize: 12,
+              fontWeight: FontWeight.normal,
+              fontFamily: 'Okra',
+              decoration: TextDecoration.lineThrough,
+              decorationColor: Color(0xFF505661),
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

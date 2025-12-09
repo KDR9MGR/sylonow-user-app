@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:sylonow_user/core/theme/app_theme.dart';
+import 'package:sylonow_user/core/utils/price_rounding.dart';
 import 'package:sylonow_user/features/auth/providers/auth_providers.dart';
 
 import '../models/screen_package_model.dart';
@@ -739,7 +740,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildOrderSummary() {
-    final basePrice = widget.timeSlot.effectivePrice;
+    final basePrice = widget.timeSlot.basePrice;
     final totalExtraPrice = widget.totalAddonPrice +
                           widget.totalExtraSpecialPrice +
                           widget.totalSpecialServicesPrice +
@@ -752,8 +753,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ? (advancePaymentData!['total_price_user_sees'] as num).toDouble()
         : grandTotal;
 
-    // Calculate convenience fee (₹28 fixed tax) - we show it as "saved"
-    const convenienceFee = 28.0;
+    // Calculate convenience fee (₹19 fixed tax) - we show it as "saved"
+    const convenienceFee = 19.0;
     final itemTotal = totalPriceUserSees + convenienceFee;
 
     // Calculate advance payment
@@ -1208,7 +1209,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         throw Exception('User not authenticated');
       }
 
-      final grandTotal = widget.timeSlot.effectivePrice +
+      final grandTotal = widget.timeSlot.basePrice +
                         widget.totalAddonPrice +
                         widget.totalExtraSpecialPrice +
                         widget.totalSpecialServicesPrice +
@@ -1618,7 +1619,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     });
 
     try {
-      final basePrice = widget.timeSlot.effectivePrice;
+      final basePrice = widget.timeSlot.basePrice;
       final addonsTotal = widget.totalAddonPrice +
                           widget.totalExtraSpecialPrice +
                           widget.totalSpecialServicesPrice +
@@ -1669,12 +1670,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final vendorId = profileResponse['id'] as String;
       print('  Vendor ID: $vendorId');
 
-      // Call the Supabase RPC function
+      // Back-calculate raw base price from final price for RPC call
+      // basePrice is already the final price (₹1299), but RPC expects raw price (₹1200)
+      // finalPrice = rawBase + 19 + (rawBase * 3.54/100)
+      // rawBase = (finalPrice - 19) / 1.0354
+      final rawServiceBase = (basePrice - 19) / (1 + 3.54 / 100);
+      print('  Raw service base (for RPC): ₹${rawServiceBase.round()}');
+
+      // Call the Supabase RPC function with RAW prices
       final response = await Supabase.instance.client.rpc(
         'calculate_advance_payment',
         params: {
           'p_vendor_id': vendorId,
-          'p_service_discounted_price': basePrice,
+          'p_service_discounted_price': rawServiceBase,
           'p_addons_discounted_price': addonsTotal,
         },
       );
@@ -1697,7 +1705,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     } catch (e) {
       print('⚠️ Error calculating advance payment: $e');
       // Fallback to formula with default values
-      final basePrice = widget.timeSlot.effectivePrice;
+      final basePrice = widget.timeSlot.basePrice;
       final addonsTotal = widget.totalAddonPrice +
                           widget.totalExtraSpecialPrice +
                           widget.totalSpecialServicesPrice +
@@ -1717,34 +1725,68 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   /// Calculate advance payment with default formula values
   /// This replicates the backend formula with default constants
-  Map<String, dynamic> _calculateWithDefaultFormula(double servicePrice, double addonsPrice) {
+  /// IMPORTANT: serviceFinalPrice is already the final price (with taxes applied in detail screen)
+  ///
+  /// Formula breakdown:
+  /// S = raw service base price (back-calculated from serviceFinalPrice)
+  /// A = addons price
+  /// F = fixed tax (₹19)
+  /// T = percent tax (3.54%)
+  /// C = commission percent (5%)
+  /// G = commission GST (18%)
+  /// adv = advance factor (40%)
+  ///
+  /// totalPriceUserSees = applyFinalRounding((S + F + S*T/100) + (A + A*T/100))
+  /// x = totalPriceUserSees - round2(totalPriceUserSees - ((S + A) - (((S + A) * C/100) * (1 + G/100))) * adv/100)
+  Map<String, dynamic> _calculateWithDefaultFormula(double serviceFinalPrice, double addonsPrice) {
     // Constants from the backend formula
-    const fixedTax = 28.00;
-    const percentTax = 3.54;
-    const commissionPercent = 5.00;
-    const commissionGstPercent = 18.00;
-    const advanceFactor = 40.00;
+    const fixedTax = 19.00; // F
+    const percentTax = 3.54; // T
+    const commissionPercent = 5.00; // C
+    const commissionGstPercent = 18.00; // G
+    const advanceFactor = 40.00; // adv
 
-    // Step 1: Service with all taxes
-    final serviceWithTax = servicePrice + fixedTax + (servicePrice * percentTax / 100);
+    // Step 1: Back-calculate raw service base price (S) from final price
+    // serviceFinalPrice = S + 19 + (S * 3.54/100)
+    // serviceFinalPrice = S * 1.0354 + 19
+    // S = (serviceFinalPrice - 19) / 1.0354
+    final S = (serviceFinalPrice - fixedTax) / (1 + percentTax / 100);
+    final A = addonsPrice;
 
-    // Step 2: Add-ons with all taxes
-    final addonsWithTax = addonsPrice + (addonsPrice * percentTax / 100);
+    // Step 2: Calculate service with all taxes (already done in detail screen, but kept for clarity)
+    final serviceWithTax = serviceFinalPrice; // S + F + S*(T/100)
 
-    // Step 3: Commission
-    final commission = (servicePrice + addonsPrice) * (commissionPercent / 100);
+    // Step 3: Calculate add-ons with all taxes
+    final addonsWithTaxRaw = A + (A * percentTax / 100); // A + A*(T/100)
+    final addonsWithTax = PriceRounding.applyFinalRounding(addonsWithTaxRaw);
 
-    // Step 4: Total commission (commission + GST on commission)
+    // Step 4: Total price user sees
+    // totalPriceUserSees = applyFinalRounding((S + F + S*T/100) + (A + A*T/100))
+    final totalPriceUserSeesRaw = serviceWithTax + addonsWithTax;
+    final totalPriceUserSees = PriceRounding.applyFinalRounding(totalPriceUserSeesRaw);
+
+    // Step 5: Calculate commission on raw prices
+    // commission = (S + A) * (C/100)
+    final commission = (S + A) * (commissionPercent / 100);
+
+    // Step 6: Total commission with GST
+    // total_commission = commission * (1 + G/100)
     final totalCommission = commission * (1 + commissionGstPercent / 100);
 
-    // Step 5: Total vendor payout
-    final totalVendorPayout = (servicePrice + addonsPrice) - totalCommission;
+    // Step 7: Vendor payout
+    // vendor_payout = (S + A) - total_commission
+    final totalVendorPayout = (S + A) - totalCommission;
 
-    // Step 6: Total price user sees
-    final totalPriceUserSees = serviceWithTax + addonsWithTax;
+    // Step 8: User advance payment using exact formula
+    // x = totalPriceUserSees - round2(totalPriceUserSees - (vendor_payout * adv/100))
+    // Expected output shows: User advance = 847.32, Remaining = totalPrice - advance
+    // So advance = totalPriceUserSees - (vendor_payout * adv/100)
+    // Keep decimal precision, don't round the advance payment itself
+    final vendorPayoutPercentage = totalVendorPayout * (advanceFactor / 100);
+    final userAdvancePayment = totalPriceUserSees - vendorPayoutPercentage;
 
-    // Step 7: User advance payment
-    final userAdvancePayment = totalPriceUserSees - (totalVendorPayout * advanceFactor / 100);
+    // Step 9: Remaining payment (what user pays after service)
+    final remainingPayment = totalPriceUserSees - userAdvancePayment;
 
     return {
       'service_with_all_taxes': serviceWithTax,
@@ -1754,7 +1796,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       'total_vendor_payout': totalVendorPayout,
       'total_price_user_sees': totalPriceUserSees,
       'user_advance_payment': userAdvancePayment,
-      'remaining_payment': totalPriceUserSees - userAdvancePayment,
+      'remaining_payment': remainingPayment,
     };
   }
 

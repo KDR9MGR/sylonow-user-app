@@ -1,3 +1,5 @@
+import 'package:sylonow_user/core/utils/price_rounding.dart';
+
 class TimeSlotModel {
   final String id;
   final String theaterId;
@@ -29,10 +31,17 @@ class TimeSlotModel {
     final endTime = json['end_time'] as String? ?? '00:00';
     final generatedSlotName = '$startTime - $endTime';
 
-    // Use RAW prices from database (without tax)
-    // Tax calculation will be done by the advance payment formula
+    // Apply the same price rounding used in theater service to match card prices
     final rawBasePrice = (json['base_price'] as num?)?.toDouble() ?? 0.0;
     final rawDiscountedPrice = (json['discounted_price'] as num?)?.toDouble() ?? 0.0;
+
+    // Apply final rounding to match the prices shown in theater cards
+    final roundedBasePrice = rawBasePrice > 0
+        ? PriceRounding.applyFinalRounding(rawBasePrice)
+        : 0.0;
+    final roundedDiscountedPrice = rawDiscountedPrice > 0
+        ? PriceRounding.applyFinalRounding(rawDiscountedPrice)
+        : 0.0;
 
     return TimeSlotModel(
       id: json['id'] as String,
@@ -41,8 +50,8 @@ class TimeSlotModel {
       slotName: generatedSlotName,
       startTime: startTime,
       endTime: endTime,
-      basePrice: rawBasePrice,
-      discountedPrice: rawDiscountedPrice,
+      basePrice: roundedBasePrice,
+      discountedPrice: roundedDiscountedPrice,
       isActive: json['is_active'] as bool? ?? true,
       isBooked: json['is_booked'] as bool? ?? false,
     );

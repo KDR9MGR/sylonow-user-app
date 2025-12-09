@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sylonow_user/core/utils/price_rounding.dart';
 
 /// Utility class for calculating service prices with taxes and fees using Supabase RPC
 class PriceCalculator {
   // Tax and fee constants (kept for fallback calculations)
   static const double transactionFeeRate = 0.0354; // 3.54%
   static const double gstRate = 0.18; // 18% GST
-  static const double convenienceFee = 28.00; // ₹28 convenience fee for service listings
+  static const double convenienceFee = 19.00; // ₹19 convenience fee for service listings
 
   /// Calculate total price for SERVICE LISTINGS display (SYNC - for immediate UI display)
   /// This is a fallback for UI that needs immediate rendering
@@ -14,7 +15,8 @@ class PriceCalculator {
     // Local calculation for immediate UI display
     final transactionFee = servicePrice * transactionFeeRate;
     final totalAmount = servicePrice + convenienceFee + transactionFee;
-    return double.parse(totalAmount.toStringAsFixed(2));
+    // Apply rounding to ensure prices end with 49 or 99
+    return PriceRounding.applyFinalRounding(totalAmount);
   }
 
   /// Calculate total price for SERVICE LISTINGS display using RPC (includes ₹28 convenience fee)
@@ -51,7 +53,8 @@ class PriceCalculator {
     final transactionFee = serviceDiscountedPrice * transactionFeeRate;
     final gstAmount = vendorHasGst ? serviceDiscountedPrice * gstRate : 0.0;
     final totalAmount = serviceDiscountedPrice + transactionFee + gstAmount;
-    return double.parse(totalAmount.toStringAsFixed(2));
+    // Apply rounding to ensure prices end with 49 or 99
+    return PriceRounding.applyFinalRounding(totalAmount);
   }
 
   /// Calculate total price for SERVICE DETAIL/CHECKOUT using RPC (NO ₹28 convenience fee)
@@ -169,10 +172,8 @@ class PriceCalculator {
 
   /// Format price as integer if no decimal places needed
   static String formatPriceAsInt(double price) {
-    if (price == price.roundToDouble()) {
-      return '₹${price.round()}';
-    }
-    return formatPrice(price);
+    // Always display as integer (whole number) since our rounding ensures clean values
+    return '₹${price.round()}';
   }
 
   /// Calculate taxes for a given amount (18% GST)
@@ -193,7 +194,8 @@ class PriceCalculator {
     // Local calculation for immediate UI display
     final transactionFee = theaterPrice * transactionFeeRate;
     final totalAmount = theaterPrice + convenienceFee + transactionFee;
-    return double.parse(totalAmount.toStringAsFixed(2));
+    // Apply rounding to ensure prices end with 49 or 99
+    return PriceRounding.applyFinalRounding(totalAmount);
   }
 
   /// Calculate total price for THEATER LISTINGS display using RPC (ASYNC - for accurate server-side calculation)
@@ -230,7 +232,8 @@ class PriceCalculator {
     final transactionFee = theaterDiscountedPrice * transactionFeeRate;
     final gstAmount = vendorHasGst ? theaterDiscountedPrice * gstRate : 0.0;
     final totalAmount = theaterDiscountedPrice + transactionFee + gstAmount;
-    return double.parse(totalAmount.toStringAsFixed(2));
+    // Apply rounding to ensure prices end with 49 or 99
+    return PriceRounding.applyFinalRounding(totalAmount);
   }
 
   /// Calculate total price for THEATER DETAIL/CHECKOUT using RPC (ASYNC - for accurate server-side calculation)

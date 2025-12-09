@@ -517,7 +517,7 @@ class _TheaterScreenDetailScreenState
                   ),
                 ),
                 Text(
-                  '₹${slot.effectivePrice.round()}',
+                  '₹${slot.basePrice.round()}',
                   style: TextStyle(
                     color: isBooked
                         ? Colors.grey[500]
@@ -952,7 +952,7 @@ class _TheaterScreenDetailScreenState
                     ),
                   ),
                   Text(
-                    '₹${(_selectedTimeSlot!.effectivePrice + _totalAddonPrice).round()}',
+                    '₹${(_selectedTimeSlot!.basePrice + _totalAddonPrice).round()}',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -962,7 +962,7 @@ class _TheaterScreenDetailScreenState
                   ),
                   if (_totalAddonPrice > 0)
                     Text(
-                      'Base: ₹${_selectedTimeSlot!.effectivePrice.round()} + Add-ons: ₹${_totalAddonPrice.round()}',
+                      'Base: ₹${_selectedTimeSlot!.basePrice.round()} + Add-ons: ₹${_totalAddonPrice.round()}',
                       style: TextStyle(
                         fontSize: 10,
                         color: Colors.grey[600],

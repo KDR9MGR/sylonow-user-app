@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:sylonow_user/core/utils/price_rounding.dart';
 import 'package:sylonow_user/features/auth/providers/auth_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/custom_button.dart';
@@ -731,7 +732,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         total += storedTotalPrice;
         debugPrint('  - Using stored totalPrice: ₹$storedTotalPrice');
       } else if (rawPrice > 0) {
-        final priceWithFees = rawPrice + (rawPrice * 0.0354);
+        final priceWithFeesRaw = rawPrice + (rawPrice * 0.0354);
+        // Apply rounding to ensure add-on prices end with 49 or 99
+        final priceWithFees = PriceRounding.applyFinalRounding(priceWithFeesRaw);
         total += priceWithFees;
         debugPrint('  - Calculated with fees: ₹$priceWithFees');
       }
@@ -2937,12 +2940,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final addOnsTotal = _calculateSelectedAddOnsTotal();
 
     // For display purposes, show service price with all fees included (no separate transaction fee)
-    final servicePriceWithFees = servicePrice + 28.00 + (servicePrice * 0.0354);
+    final servicePriceWithFeesRaw = servicePrice + 19.00 + (servicePrice * 0.0354);
+    // Apply rounding to ensure prices end with 49 or 99
+    final servicePriceWithFees = PriceRounding.applyFinalRounding(servicePriceWithFeesRaw);
     // Add-ons totalPrice already includes transaction fee from service detail screen
     final addOnsPriceWithFees =
         addOnsTotal; // No additional fee calculation needed
-    final totalAmount =
-        servicePriceWithFees + addOnsPriceWithFees - couponDiscount;
+    final totalAmountRaw = servicePriceWithFees + addOnsPriceWithFees - couponDiscount;
+    // Apply rounding to total amount
+    final totalAmount = PriceRounding.applyFinalRounding(totalAmountRaw);
 
     // Use Canvas formula for accurate calculation
     final canvasResult = _calculateCanvasFormula();
@@ -3551,7 +3557,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final S = _getServicePrice(); // service discounted price
     final A =
         _calculateSelectedAddOnsRawTotal(); // add-ons raw price (before fees)
-    final F = 28.0; // fixed tax
+    final F = 19.0; // fixed tax (convenience fee)
     final p = 3.54; // percent tax
     final c = 5.0; // commission percent
     final g = 18.0; // commission GST percent
@@ -3562,22 +3568,27 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final commission = (S + A) * (c / 100);
     final totalCommission = commission * (1 + g / 100);
     final totalVendorPayout = (S + A) - totalCommission;
-    final totalPriceUserSees = serviceWithAll + addonsWithAll;
-    final userAdvancePayment =
-        totalPriceUserSees - totalVendorPayout * (adv / 100);
+    final totalPriceUserSeesRaw = serviceWithAll + addonsWithAll;
+    final userAdvancePaymentRaw =
+        totalPriceUserSeesRaw - totalVendorPayout * (adv / 100);
+
+    // Apply rounding to ensure all user-facing prices end with 49 or 99
+    final totalPriceUserSees = PriceRounding.applyFinalRounding(totalPriceUserSeesRaw);
+    final userAdvancePayment = PriceRounding.applyFinalRounding(userAdvancePaymentRaw);
+    final remainingPayment = PriceRounding.applyFinalRounding(totalPriceUserSees - userAdvancePayment);
 
     debugPrint('Canvas Formula Debug:');
     debugPrint('S (service): $S');
     debugPrint('A (add-ons raw): $A');
     debugPrint('serviceWithAll: $serviceWithAll');
     debugPrint('addonsWithAll: $addonsWithAll');
-    debugPrint('totalPriceUserSees: $totalPriceUserSees');
-    debugPrint('userAdvancePayment: $userAdvancePayment');
+    debugPrint('totalPriceUserSees (rounded): $totalPriceUserSees');
+    debugPrint('userAdvancePayment (rounded): $userAdvancePayment');
 
     return {
       'total_price_user_sees': totalPriceUserSees,
       'user_advance_payment': userAdvancePayment,
-      'remaining_payment': totalPriceUserSees - userAdvancePayment,
+      'remaining_payment': remainingPayment,
     };
   }
 
@@ -3644,7 +3655,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   /// Get the service price with all fees included
   double _getServicePriceWithFees() {
     final servicePrice = _getServicePrice();
-    return servicePrice + 28.00 + (servicePrice * 0.0354);
+    final totalWithFees = servicePrice + 19.00 + (servicePrice * 0.0354);
+    // Apply rounding to ensure prices end with 49 or 99
+    return PriceRounding.applyFinalRounding(totalWithFees);
   }
 
   /// Calculate total savings based on original price with fees vs current discounted price with fees
@@ -3663,7 +3676,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     // Calculate original price with fees (without any discounts)
-    final originalPriceWithFees = originalPrice + 28.00 + (originalPrice * 0.0354);
+    final originalPriceWithFeesRaw = originalPrice + 19.00 + (originalPrice * 0.0354);
+    // Apply rounding to ensure consistent pricing
+    final originalPriceWithFees = PriceRounding.applyFinalRounding(originalPriceWithFeesRaw);
 
     // Total savings = original price with fees - discounted service price with fees
     // This shows savings from the original price to the current discounted price

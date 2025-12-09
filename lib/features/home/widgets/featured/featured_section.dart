@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,53 +17,62 @@ class FeaturedSection extends ConsumerStatefulWidget {
 class _FeaturedSectionState extends ConsumerState<FeaturedSection> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  Timer? _autoScrollTimer;
+  bool _isAutoPlaying = true;
+  bool _isUserInteracting = false;
 
   @override
   void initState() {
     super.initState();
-    // Auto-scroll setup
     _startAutoScroll();
+  }
+
+  void _startAutoScroll() {
+    _autoScrollTimer?.cancel();
+    _autoScrollTimer = Timer.periodic(const Duration(seconds: 4), (timer) {
+      if (mounted && _isAutoPlaying && !_isUserInteracting) {
+        final featuredState = ref.read(featuredServicesProvider);
+        final itemCount = featuredState.services.length > 10
+            ? 10
+            : featuredState.services.length;
+
+        if (itemCount > 0) {
+          final nextIndex = (_currentIndex + 1) % itemCount;
+          _pageController.animateToPage(
+            nextIndex,
+            duration: const Duration(milliseconds: 800),
+            curve: Curves.easeInOutCubic,
+          );
+        }
+      }
+    });
+  }
+
+  void _handleUserInteraction() {
+    setState(() {
+      _isUserInteracting = true;
+      _isAutoPlaying = false;
+    });
+
+    _autoScrollTimer?.cancel();
+
+    // Resume auto-scroll after 3 seconds of no interaction
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        setState(() {
+          _isUserInteracting = false;
+          _isAutoPlaying = true;
+        });
+        _startAutoScroll();
+      }
+    });
   }
 
   @override
   void dispose() {
+    _autoScrollTimer?.cancel();
     _pageController.dispose();
     super.dispose();
-  }
-
-  void _startAutoScroll() {
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        _autoScroll();
-      }
-    });
-  }
-
-  void _autoScroll() {
-    if (!mounted) return;
-
-    final featuredState = ref.read(featuredServicesProvider);
-    if (featuredState.services.isEmpty) {
-      _startAutoScroll();
-      return;
-    }
-
-    final maxItems = featuredState.services.length > 10 
-        ? 10 
-        : featuredState.services.length;
-    final nextIndex = (_currentIndex + 1) % maxItems;
-
-    _pageController.animateToPage(
-      nextIndex,
-      duration: const Duration(milliseconds: 500),
-      curve: Curves.easeInOut,
-    );
-
-    Future.delayed(const Duration(seconds: 3), () {
-      if (mounted) {
-        _autoScroll();
-      }
-    });
   }
 
   @override
@@ -85,7 +95,10 @@ class _FeaturedSectionState extends ConsumerState<FeaturedSection> {
           Container(
             height: 200,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.only(
+                topRight: Radius.circular(16),
+                bottomLeft: Radius.circular(16)
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.15),
@@ -95,7 +108,10 @@ class _FeaturedSectionState extends ConsumerState<FeaturedSection> {
               ],
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
+               borderRadius: BorderRadius.only(
+                topRight: Radius.circular(16),
+                bottomLeft: Radius.circular(16)
+              ),
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) {
@@ -132,6 +148,7 @@ class _FeaturedSectionState extends ConsumerState<FeaturedSection> {
   Widget _buildCarouselItem(ServiceListingModel service) {
     return GestureDetector(
       onTap: () {
+        _handleUserInteraction();
         context.push('/service/${service.id}');
       },
       child: Stack(
@@ -159,43 +176,133 @@ class _FeaturedSectionState extends ConsumerState<FeaturedSection> {
               ),
             ),
           ),
-          // Gradient overlay from bottom to top
+          // Multi-layer gradient overlay for better readability
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.bottomCenter,
-                end: Alignment.topCenter,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
                 colors: [
-                  Colors.black.withOpacity(0.7),
-                  Colors.black.withOpacity(0.3),
-                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.1),
+                  Colors.black.withValues(alpha: 0.4),
+                  Colors.black.withValues(alpha: 0.8),
                 ],
-                stops: const [0.0, 0.5, 1.0],
+                stops: const [0.0, 0.6, 1.0],
               ),
             ),
           ),
-          // Service title at bottom
+          // Content overlay at bottom
           Positioned(
-            bottom: 16,
-            left: 16,
-            right: 16,
-            child: Text(
-              service.name,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'Okra',
-                shadows: [
-                  Shadow(
-                    offset: Offset(0, 1),
-                    blurRadius: 3,
-                    color: Colors.black,
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Service title
+                  Text(
+                    service.name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: 'Okra',
+                      letterSpacing: -0.5,
+                      height: 1.2,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                          color: Colors.black45,
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  // Book Now button
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryColor.withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Book Now',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: 'Okra',
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(
+                          Icons.arrow_forward_rounded,
+                          size: 16,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          // Featured badge at top
+          Positioned(
+            top: 12,
+            left: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.amber.shade600,
+                borderRadius: BorderRadius.circular(8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.star_rounded,
+                    size: 14,
+                    color: Colors.black,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Featured',
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'Okra',
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
@@ -235,7 +342,7 @@ class _FeaturedSectionState extends ConsumerState<FeaturedSection> {
                 ),
               ],
             ),
-            child: Center(
+            child: const Center(
               child: CircularProgressIndicator(color: AppTheme.primaryColor),
             ),
           ),

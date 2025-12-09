@@ -707,6 +707,30 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
                       );
                     },
                   ),
+                  // Featured section title
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final featuredState = ref.watch(featuredServicesProvider);
+                      if (featuredState.services.isNotEmpty || featuredState.hasMore) {
+                        return SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Text(
+                              'Featured Services',
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w700,
+                                fontFamily: 'Okra',
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return const SliverToBoxAdapter(child: SizedBox.shrink());
+                    },
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
                   // Conditionally show featured section
                   Consumer(
                     builder: (context, ref, child) {
@@ -728,6 +752,22 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
                       return const SliverToBoxAdapter(child: SizedBox.shrink());
                     },
                   ),
+                  // Theater section title
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: Text(
+                        'Private Theaters',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          fontFamily: 'Okra',
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 8)),
                   SliverToBoxAdapter(
                     child: Container(
                       key: theaterKey,

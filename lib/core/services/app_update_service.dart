@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:sylonow_user/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -143,26 +144,18 @@ class AppUpdateService {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Colors.orange[400]!,
-                          Colors.deepOrange[600]!,
+                          AppTheme.primaryColor,
+                          AppTheme.primaryColor.withValues(alpha: 0.8),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.orange.withValues(alpha: 0.3),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
+                     
                     ),
-                    child: const Icon(
-                      Icons.system_update_alt,
-                      color: Colors.white,
-                      size: 40,
-                    ),
+                    child: Image.asset(
+                      'assets/images/app_logo_new.jpg'
+                    )
                   ),
 
                   const SizedBox(height: 24),
@@ -271,20 +264,14 @@ class AppUpdateService {
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                Colors.orange[400]!,
-                                Colors.deepOrange[600]!,
+                                AppTheme.primaryColor,
+                                AppTheme.primaryColor.withValues(alpha: 0.8),
                               ],
                               begin: Alignment.centerLeft,
                               end: Alignment.centerRight,
                             ),
                             borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.orange.withValues(alpha: 0.4),
-                                blurRadius: 15,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
+                            
                           ),
                           child: ElevatedButton(
                             onPressed: () async {
