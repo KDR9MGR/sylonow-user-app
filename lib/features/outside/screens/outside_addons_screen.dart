@@ -577,11 +577,11 @@ class _OutsideAddonsScreenState extends ConsumerState<OutsideAddonsScreen> {
   void _continueToCheckout() {
     // Prepare selected addons data
     final selectedAddonsData = <Map<String, dynamic>>[];
-    
+
     for (final entry in selectedAddons.entries) {
       final addonId = entry.key;
       final quantity = entry.value;
-      
+
       selectedAddonsData.add({
         'id': addonId,
         'quantity': quantity,

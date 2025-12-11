@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../models/user_profile_model.dart';
 import '../repositories/profile_repository.dart';
-import 'package:flutter/foundation.dart'; // Added for debugPrint
+import 'package:flutter/foundation.dart'; // Added for //
 
 class ProfileService {
   final ProfileRepository _profileRepository;
@@ -23,7 +23,7 @@ class ProfileService {
       
       return profile;
     } catch (e) {
-      debugPrint('Failed to get current user profile: $e');
+      //('Failed to get current user profile: $e');
       // Re-throw with a more user-friendly message
       throw 'Unable to load profile. Please try again later.';
     }
@@ -34,7 +34,7 @@ class ProfileService {
     try {
       return await _profileRepository.updateUserProfile(profile);
     } catch (e) {
-      debugPrint('Failed to update profile: $e');
+      //('Failed to update profile: $e');
       throw 'Unable to update profile. Please try again later.';
     }
   }
@@ -54,7 +54,7 @@ class ProfileService {
       final updatedProfile = profile.copyWith(profileImageUrl: imageUrl);
       return await _profileRepository.updateUserProfile(updatedProfile);
     } catch (e) {
-      debugPrint('Failed to update profile image: $e');
+      //('Failed to update profile image: $e');
       throw 'Unable to update profile image. Please try again later.';
     }
   }
@@ -70,7 +70,7 @@ class ProfileService {
       final updatedProfile = profile.copyWith(profileImageUrl: null);
       return await _profileRepository.updateUserProfile(updatedProfile);
     } catch (e) {
-      debugPrint('Failed to remove profile image: $e');
+      //('Failed to remove profile image: $e');
       throw 'Unable to remove profile image. Please try again later.';
     }
   }

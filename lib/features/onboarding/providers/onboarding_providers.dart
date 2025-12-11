@@ -84,13 +84,6 @@ class OnboardingController extends _$OnboardingController {
       userPhone = currentUser!.phone!;
     }
 
-    // Save complete onboarding data to database one final time
-    debugPrint(
-      'CompleteOnboarding: state.selectedOccasionId = ${state.selectedOccasionId}',
-    );
-    debugPrint(
-      'CompleteOnboarding: state.selectedOccasion = ${state.selectedOccasion}',
-    );
     await authService.saveOnboardingData(
       userName: state.userName,
       selectedOccasion: state.selectedOccasion,

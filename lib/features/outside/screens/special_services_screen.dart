@@ -48,7 +48,7 @@ class _SpecialServicesScreenState extends ConsumerState<SpecialServicesScreen> {
   Widget build(BuildContext context) {
     final specialServices = ref.watch(addonsByCategoryProvider(AddonCategoryParams(
       theaterId: widget.screen.theaterId,
-      category: 'special_services',
+      category: 'special service',
     )));
 
     return Scaffold(
@@ -207,12 +207,13 @@ class _SpecialServicesScreenState extends ConsumerState<SpecialServicesScreen> {
     return InkWell(
       onTap: () {
         setState(() {
+          final servicePriceWithTax = service.price * 1.0354; // Add 3.54% tax
           if (isSelected) {
             _selectedSpecialServices.remove(service);
-            _totalSpecialServicesPrice -= service.price;
+            _totalSpecialServicesPrice -= servicePriceWithTax;
           } else {
             _selectedSpecialServices.add(service);
-            _totalSpecialServicesPrice += service.price;
+            _totalSpecialServicesPrice += servicePriceWithTax;
           }
         });
       },
@@ -319,7 +320,7 @@ class _SpecialServicesScreenState extends ConsumerState<SpecialServicesScreen> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Text(
-                          service.formattedPrice,
+                          '₹${(service.price * 1.0354).round()}',
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

@@ -27,7 +27,7 @@ class ProfileController extends StateNotifier<AsyncValue<UserProfileModel?>> {
       
       state = AsyncValue.data(profile);
     } catch (e, stackTrace) {
-      debugPrint('Error loading user profile: $e');
+      //('Error loading user profile: $e');
       state = AsyncValue.error(e, stackTrace);
     }
   }
@@ -47,7 +47,7 @@ class ProfileController extends StateNotifier<AsyncValue<UserProfileModel?>> {
       state = AsyncValue.data(updatedProfile);
       return true;
     } catch (e, stackTrace) {
-      debugPrint('Error updating profile: $e');
+      //('Error updating profile: $e');
       state = AsyncValue.error(e, stackTrace);
       return false;
     }
@@ -66,7 +66,7 @@ class ProfileController extends StateNotifier<AsyncValue<UserProfileModel?>> {
       state = AsyncValue.data(updatedProfile);
       return true;
     } catch (e, stackTrace) {
-      debugPrint('Error updating profile image: $e');
+      //('Error updating profile image: $e');
       state = AsyncValue.error(e, stackTrace);
       return false;
     }
@@ -85,7 +85,7 @@ class ProfileController extends StateNotifier<AsyncValue<UserProfileModel?>> {
       state = AsyncValue.data(updatedProfile);
       return true;
     } catch (e, stackTrace) {
-      debugPrint('Error removing profile image: $e');
+      //('Error removing profile image: $e');
       state = AsyncValue.error(e, stackTrace);
       return false;
     }

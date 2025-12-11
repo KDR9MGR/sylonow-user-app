@@ -142,7 +142,7 @@ class RecentSearchesNotifier extends StateNotifier<List<String>> {
       final searchesJson = prefs.getStringList(_storageKey) ?? [];
       state = searchesJson.take(_maxRecentSearches).toList();
     } catch (e) {
-      debugPrint('Failed to load recent searches: $e');
+      //('Failed to load recent searches: $e');
     }
   }
 
@@ -151,7 +151,7 @@ class RecentSearchesNotifier extends StateNotifier<List<String>> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_storageKey, state);
     } catch (e) {
-      debugPrint('Failed to save recent searches: $e');
+      //('Failed to save recent searches: $e');
     }
   }
 
@@ -241,7 +241,7 @@ class SearchRepository {
     if (_searchCache.containsKey(cacheKey)) {
       final cached = _searchCache[cacheKey]!;
       if (!cached.isExpired) {
-        debugPrint('Returning cached search results for: $query');
+        //('Returning cached search results for: $query');
         return cached.data;
       } else {
         _searchCache.remove(cacheKey);
@@ -257,7 +257,7 @@ class SearchRepository {
       // Try to get from offline cache first
       final offlineResults = await _getOfflineSearchResults(query);
       if (offlineResults.isNotEmpty) {
-        debugPrint('Returning offline cached results for: $query');
+        //('Returning offline cached results for: $query');
         return _applyFilters(offlineResults, filters);
       }
 
@@ -267,7 +267,7 @@ class SearchRepository {
       }
 
       // Perform actual search
-      debugPrint('Performing live search for: $query');
+      //('Performing live search for: $query');
       final results = await _performLiveSearch(query, filters);
       
       // Check if request was cancelled before caching
@@ -287,7 +287,7 @@ class SearchRepository {
 
       return results;
     } catch (e) {
-      debugPrint('Search error: $e');
+      //('Search error: $e');
       // Return empty list on error
       return <ServiceListingModel>[];
     }
@@ -435,7 +435,7 @@ class SearchRepository {
         }
       }
     } catch (e) {
-      debugPrint('Failed to get offline search results: $e');
+      //('Failed to get offline search results: $e');
     }
     
     return <ServiceListingModel>[];
@@ -451,7 +451,7 @@ class SearchRepository {
       };
       await prefs.setString('${_cacheKey}_$query', json.encode(data));
     } catch (e) {
-      debugPrint('Failed to save offline search results: $e');
+      //('Failed to save offline search results: $e');
     }
   }
 

@@ -37,9 +37,9 @@ class NotificationService {
       // Configure FCM
       await _configureFCM();
 
-      debugPrint('Notification service initialized successfully');
+      //('Notification service initialized successfully');
     } catch (e) {
-      debugPrint('Error initializing notification service: $e');
+      //('Error initializing notification service: $e');
     }
   }
 
@@ -57,7 +57,7 @@ class NotificationService {
       sound: true,
     );
 
-    debugPrint('Notification permission status: ${settings.authorizationStatus}');
+    //('Notification permission status: ${settings.authorizationStatus}');
   }
 
   /// Initialize local notifications
@@ -136,19 +136,19 @@ class NotificationService {
 
   /// Handle foreground messages
   void _handleForegroundMessage(RemoteMessage message) {
-    debugPrint('Received foreground message: ${message.messageId}');
+    //('Received foreground message: ${message.messageId}');
     _showLocalNotification(message);
   }
 
   /// Handle when notification is opened from background/terminated state
   void _handleNotificationOpenedApp(RemoteMessage message) {
-    debugPrint('Notification opened app: ${message.messageId}');
+    //('Notification opened app: ${message.messageId}');
     _navigateToScreen(message);
   }
 
   /// Handle notification tap
   void _onNotificationTapped(NotificationResponse response) {
-    debugPrint('Notification tapped: ${response.payload}');
+    //('Notification tapped: ${response.payload}');
     if (response.payload != null) {
       final data = jsonDecode(response.payload!);
       _navigateToScreenFromData(data);
@@ -224,7 +224,7 @@ class NotificationService {
   void _navigateToScreenFromData(Map<String, dynamic> data) {
     // This would be implemented based on your navigation requirements
     // For now, just log the navigation intent
-    debugPrint('Would navigate to: ${data['screen']} with data: $data');
+    //('Would navigate to: ${data['screen']} with data: $data');
   }
 
   /// Send booking confirmation notification to vendor
@@ -284,7 +284,7 @@ class NotificationService {
 
       return result;
     } catch (e) {
-      debugPrint('Error sending booking confirmation: $e');
+      //('Error sending booking confirmation: $e');
       return NotificationResult.error('Failed to send notification: ${e.toString()}');
     }
   }
@@ -326,7 +326,7 @@ class NotificationService {
         data: notificationData,
       );
     } catch (e) {
-      debugPrint('Error sending payment completion notification: $e');
+      //('Error sending payment completion notification: $e');
       return NotificationResult.error('Failed to send notification: ${e.toString()}');
     }
   }
@@ -370,7 +370,7 @@ class NotificationService {
         data: notificationData,
       );
     } catch (e) {
-      debugPrint('Error sending booking reminder: $e');
+      //('Error sending booking reminder: $e');
       return NotificationResult.error('Failed to send notification: ${e.toString()}');
     }
   }
@@ -389,11 +389,11 @@ class NotificationService {
       // For now, we'll simulate sending the notification
       // In real implementation, you would make HTTP request to FCM endpoint
       
-      debugPrint('Sending FCM notification:');
-      debugPrint('Title: $title');
-      debugPrint('Body: $body');
-      debugPrint('Token: ${token.substring(0, 20)}...');
-      debugPrint('Data: $data');
+      //('Sending FCM notification:');
+      //('Title: $title');
+      //('Body: $body');
+      //('Token: ${token.substring(0, 20)}...');
+      //('Data: $data');
 
       // Simulate network delay
       await Future.delayed(const Duration(seconds: 1));
@@ -401,7 +401,7 @@ class NotificationService {
       // Simulate success (in real implementation, check actual response)
       return NotificationResult.success('Notification sent successfully');
     } catch (e) {
-      debugPrint('Error sending FCM notification: $e');
+      //('Error sending FCM notification: $e');
       return NotificationResult.error('Failed to send FCM notification');
     }
   }
@@ -429,7 +429,7 @@ class NotificationService {
         'retry_count': 0,
       });
     } catch (e) {
-      debugPrint('Error queueing notification: $e');
+      //('Error queueing notification: $e');
     }
   }
 
@@ -445,7 +445,7 @@ class NotificationService {
           .eq('booking_id', bookingId)
           .eq('vendor_id', vendorId);
     } catch (e) {
-      debugPrint('Error marking notification as sent: $e');
+      //('Error marking notification as sent: $e');
     }
   }
 
@@ -460,7 +460,7 @@ class NotificationService {
 
       return response;
     } catch (e) {
-      debugPrint('Error getting vendor: $e');
+      //('Error getting vendor: $e');
       return null;
     }
   }
@@ -480,7 +480,7 @@ class NotificationService {
     try {
       return await _firebaseMessaging?.getToken();
     } catch (e) {
-      debugPrint('Error getting FCM token: $e');
+      //('Error getting FCM token: $e');
       return null;
     }
   }
@@ -489,9 +489,9 @@ class NotificationService {
   Future<void> subscribeToTopic(String topic) async {
     try {
       await _firebaseMessaging?.subscribeToTopic(topic);
-      debugPrint('Subscribed to topic: $topic');
+      //('Subscribed to topic: $topic');
     } catch (e) {
-      debugPrint('Error subscribing to topic: $e');
+      //('Error subscribing to topic: $e');
     }
   }
 
@@ -499,9 +499,9 @@ class NotificationService {
   Future<void> unsubscribeFromTopic(String topic) async {
     try {
       await _firebaseMessaging?.unsubscribeFromTopic(topic);
-      debugPrint('Unsubscribed from topic: $topic');
+      //('Unsubscribed from topic: $topic');
     } catch (e) {
-      debugPrint('Error unsubscribing from topic: $e');
+      //('Error unsubscribing from topic: $e');
     }
   }
 }
@@ -509,7 +509,7 @@ class NotificationService {
 /// Background message handler
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  debugPrint('Handling background message: ${message.messageId}');
+  //('Handling background message: ${message.messageId}');
   // Handle background message processing here
 }
 

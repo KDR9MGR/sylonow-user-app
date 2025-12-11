@@ -16,8 +16,8 @@ class AppUpdateService {
       final currentVersion = packageInfo.version;
       final platform = Platform.isAndroid ? 'android' : 'ios';
 
-      debugPrint('📱 Current app version: $currentVersion');
-      debugPrint('📱 Platform: $platform');
+      //('📱 Current app version: $currentVersion');
+      //('📱 Platform: $platform');
 
       // Fetch latest version from Supabase
       final response = await _supabase
@@ -29,10 +29,10 @@ class AppUpdateService {
           .limit(1)
           .single();
 
-      debugPrint('📱 Database response: $response');
+      //('📱 Database response: $response');
 
       if (response.isEmpty) {
-        debugPrint('📱 No versions found in database');
+        //('📱 No versions found in database');
         return null;
       }
 
@@ -42,12 +42,12 @@ class AppUpdateService {
           'A new version of the app is available. Please update to continue using the app.';
       final storeUrl = response['store_url'] as String?;
 
-      debugPrint('📱 Latest version from DB: $latestVersion');
-      debugPrint('📱 Force update: $isForceUpdate');
+      //('📱 Latest version from DB: $latestVersion');
+      //('📱 Force update: $isForceUpdate');
 
       // Compare versions
       final shouldUpdate = _shouldUpdate(currentVersion, latestVersion);
-      debugPrint('📱 Should update: $shouldUpdate');
+      //('📱 Should update: $shouldUpdate');
 
       if (shouldUpdate) {
         return {
@@ -61,7 +61,7 @@ class AppUpdateService {
 
       return null;
     } catch (e) {
-      debugPrint('📱 ❌ Error checking for update: $e');
+      //('📱 ❌ Error checking for update: $e');
       return null;
     }
   }
@@ -88,7 +88,7 @@ class AppUpdateService {
 
       return false; // Versions are equal
     } catch (e) {
-      debugPrint('Error comparing versions: $e');
+      //('Error comparing versions: $e');
       return false;
     }
   }

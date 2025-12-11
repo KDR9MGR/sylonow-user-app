@@ -90,7 +90,7 @@ class SylonowQrService {
         ), // 15 minutes validity
       );
     } catch (e) {
-      debugPrint('Error generating QR payment: $e');
+      //('Error generating QR payment: $e');
       return QrPaymentResult.error(
         'Failed to generate QR payment: ${e.toString()}',
       );
@@ -218,7 +218,7 @@ class SylonowQrService {
 
       return PaymentVerificationResult.success(updatedPayment);
     } catch (e) {
-      debugPrint('Error verifying QR payment: $e');
+      //('Error verifying QR payment: $e');
       return PaymentVerificationResult.error(
         'Failed to verify payment: ${e.toString()}',
       );
@@ -241,7 +241,7 @@ class SylonowQrService {
     try {
       return await _paymentRepository.getPaymentById(paymentTransactionId);
     } catch (e) {
-      debugPrint('Error getting QR payment status: $e');
+      //('Error getting QR payment status: $e');
       return null;
     }
   }
@@ -256,7 +256,7 @@ class SylonowQrService {
       );
       return true;
     } catch (e) {
-      debugPrint('Error cancelling QR payment: $e');
+      //('Error cancelling QR payment: $e');
       return false;
     }
   }
@@ -308,7 +308,7 @@ Note: QR code is valid for 15 minutes only.
         expiryTime: DateTime.now().add(const Duration(minutes: 30)),
       );
     } catch (e) {
-      debugPrint('Error generating wallet top-up QR: $e');
+      //('Error generating wallet top-up QR: $e');
       return QrTopUpResult.error(
         'Failed to generate top-up QR: ${e.toString()}',
       );
@@ -367,7 +367,7 @@ Note: QR code is valid for 15 minutes only.
         expiryTime: DateTime.now().add(const Duration(minutes: 15)),
       );
     } catch (e) {
-      debugPrint('Error refreshing QR payment: $e');
+      //('Error refreshing QR payment: $e');
       return QrPaymentResult.error(
         'Failed to refresh QR payment: ${e.toString()}',
       );

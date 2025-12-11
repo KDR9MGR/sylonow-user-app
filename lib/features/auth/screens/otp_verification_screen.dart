@@ -52,9 +52,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     // Listen for incoming SMS with specific pattern
     try {
       final signature = await _getAppSignature();
-      debugPrint('App signature: $signature');
+      //('App signature: $signature');
     } catch (e) {
-      debugPrint('Error getting app signature: $e');
+      //('Error getting app signature: $e');
     }
   }
 

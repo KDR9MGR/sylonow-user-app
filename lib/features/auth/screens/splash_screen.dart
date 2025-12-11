@@ -56,12 +56,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       
       // Check if user is authenticated
       final isAuthenticated = await ref.read(isAuthenticatedProvider.future);
-      debugPrint('Splash: isAuthenticated result: $isAuthenticated');
+      //('Splash: isAuthenticated result: $isAuthenticated');
       
       if (isAuthenticated) {
         // User is authenticated, check if onboarding is completed
         final isOnboardingCompleted = await authService.isOnboardingCompleted();
-        debugPrint('Splash: isOnboardingCompleted: $isOnboardingCompleted');
+        //('Splash: isOnboardingCompleted: $isOnboardingCompleted');
         
         if (isOnboardingCompleted) {
           // Onboarding completed, go to home screen
@@ -76,11 +76,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       }
     } catch (e) {
       // Error checking auth, default to welcome screen
-      debugPrint('Splash: Error in auth check: $e');
+      //('Splash: Error in auth check: $e');
       _nextRoute = AppConstants.welcomeRoute;
     }
     
-    debugPrint('Splash: Final route decision: $_nextRoute');
+    //('Splash: Final route decision: $_nextRoute');
     _authCheckCompleted = true;
     _navigateIfReady();
   }

@@ -39,7 +39,7 @@ class _CelebrationDateContainerState extends ConsumerState<CelebrationDateContai
         });
       }
     } catch (e) {
-      debugPrint('Error loading celebration date: $e');
+      //('Error loading celebration date: $e');
     }
   }
 
@@ -74,7 +74,7 @@ class _CelebrationDateContainerState extends ConsumerState<CelebrationDateContai
           initialDate = storedDate;
         }
       } catch (e) {
-        debugPrint('Error parsing stored celebration date: $e');
+        //('Error parsing stored celebration date: $e');
         // Fall back to today's date
       }
     }
@@ -132,7 +132,7 @@ class _CelebrationDateContainerState extends ConsumerState<CelebrationDateContai
         });
       }
     } catch (e) {
-      debugPrint('Error updating celebration date: $e');
+      //('Error updating celebration date: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;

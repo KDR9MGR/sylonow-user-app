@@ -88,11 +88,11 @@ Future<List<ServiceListingModel>> getPopularNearbyServices({
   try {
     // If no coordinates provided, return all services (fallback)
     if (userLat == null || userLon == null) {
-      debugPrint('🔍 No coordinates provided, returning all services');
+      //('🔍 No coordinates provided, returning all services');
       // ... fallback logic
     }
 
-    debugPrint('🔍 Filtering services within ${radiusKm}km of ($userLat, $userLon)');
+    //('🔍 Filtering services within ${radiusKm}km of ($userLat, $userLon)');
 
     // Use RPC function to get services within radius
     final response = await _supabase.rpc(
@@ -105,13 +105,13 @@ Future<List<ServiceListingModel>> getPopularNearbyServices({
       },
     );
 
-    debugPrint('🔍 Found ${response.length} services within ${radiusKm}km radius');
+    //('🔍 Found ${response.length} services within ${radiusKm}km radius');
 
     return (response as List)
         .map<ServiceListingModel>((data) => ServiceListingModel.fromJson(data))
         .toList();
   } catch (e) {
-    debugPrint('❌ Error fetching nearby services: $e');
+    //('❌ Error fetching nearby services: $e');
     // Fallback to all services if RPC fails
   }
 }

@@ -137,7 +137,7 @@ class BookingService {
 
       return BookingValidationResult.success(booking);
     } catch (e) {
-      debugPrint('Error creating booking: $e');
+      //('Error creating booking: $e');
       return BookingValidationResult.error('Failed to create booking: ${e.toString()}');
     }
   }
@@ -155,7 +155,7 @@ class BookingService {
         date: date,
       );
     } catch (e) {
-      debugPrint('Error getting available time slots: $e');
+      //('Error getting available time slots: $e');
       return [];
     }
   }
@@ -199,7 +199,7 @@ class BookingService {
       // For now, return empty list and let UI handle slot generation
       return [];
     } catch (e) {
-      debugPrint('Error generating default time slots: $e');
+      //('Error generating default time slots: $e');
       return [];
     }
   }
@@ -247,7 +247,7 @@ class BookingService {
 
       return BookingActionResult.success(updatedBooking);
     } catch (e) {
-      debugPrint('Error cancelling booking: $e');
+      //('Error cancelling booking: $e');
       return BookingActionResult.error('Failed to cancel booking: ${e.toString()}');
     }
   }
@@ -262,7 +262,7 @@ class BookingService {
 
       return BookingDetailsResult.success(booking);
     } catch (e) {
-      debugPrint('Error getting booking details: $e');
+      //('Error getting booking details: $e');
       return BookingDetailsResult.error('Failed to get booking details: ${e.toString()}');
     }
   }
@@ -275,7 +275,7 @@ class BookingService {
     try {
       return await _repository.getUserBookings(userId, limit: limit, offset: offset);
     } catch (e) {
-      debugPrint('Error getting user booking history: $e');
+      //('Error getting user booking history: $e');
       return [];
     }
   }

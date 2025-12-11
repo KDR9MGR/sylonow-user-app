@@ -167,7 +167,7 @@ class DiscountedServicesScreen extends ConsumerWidget {
               crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 0.75,
+              childAspectRatio: 0.70,
             ),
             itemCount: discountedServices.length,
             itemBuilder: (context, index) {

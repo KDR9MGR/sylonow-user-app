@@ -148,11 +148,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     if (shouldUpdate) {
-      debugPrint('🔄 [CHECKOUT] Parameters updated - refreshing UI');
-      debugPrint('🔄 [CHECKOUT] New date: ${widget.selectedDate}');
-      debugPrint(
-        '🔄 [CHECKOUT] New time slot: ${widget.selectedTimeSlot?.startTime} - ${widget.selectedTimeSlot?.endTime}',
-      );
+    
 
       // Update selected address if it changed
       if (oldWidget.selectedAddressId != widget.selectedAddressId) {
@@ -180,7 +176,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       return coupons.isNotEmpty;
     } catch (e) {
       // If there's an error fetching coupons, don't show the coupon section
-      debugPrint('Error checking available coupons: $e');
+      //('Error checking available coupons: $e');
       return false;
     }
   }
@@ -716,7 +712,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     double total = 0.0;
-    debugPrint('=== ADD-ON CALCULATION DEBUG ===');
+    //('=== ADD-ON CALCULATION DEBUG ===');
     for (final entry in editableAddOns!.entries) {
       final addOnId = entry.key;
       final addOnData = entry.value;
@@ -724,23 +720,23 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final rawPrice = _safeToDouble(addOnData['price']);
       final name = addOnData['name'] as String?;
 
-      debugPrint('Add-on: $name (ID: $addOnId)');
-      debugPrint('  - Stored totalPrice: $storedTotalPrice');
-      debugPrint('  - Raw price: $rawPrice');
+      //('Add-on: $name (ID: $addOnId)');
+      //('  - Stored totalPrice: $storedTotalPrice');
+      //('  - Raw price: $rawPrice');
 
       if (storedTotalPrice > 0) {
         total += storedTotalPrice;
-        debugPrint('  - Using stored totalPrice: ₹$storedTotalPrice');
+        //('  - Using stored totalPrice: ₹$storedTotalPrice');
       } else if (rawPrice > 0) {
         final priceWithFeesRaw = rawPrice + (rawPrice * 0.0354);
         // Apply rounding to ensure add-on prices end with 49 or 99
         final priceWithFees = PriceRounding.applyFinalRounding(priceWithFeesRaw);
         total += priceWithFees;
-        debugPrint('  - Calculated with fees: ₹$priceWithFees');
+        //('  - Calculated with fees: ₹$priceWithFees');
       }
     }
-    debugPrint('Selected add-ons total (with fees): ₹$total');
-    debugPrint('=== END ADD-ON CALCULATION DEBUG ===');
+    //('Selected add-ons total (with fees): ₹$total');
+    //('=== END ADD-ON CALCULATION DEBUG ===');
     return total;
   }
 
@@ -750,7 +746,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     }
 
     double total = 0.0;
-    debugPrint('=== RAW ADD-ON CALCULATION DEBUG ===');
+    //('=== RAW ADD-ON CALCULATION DEBUG ===');
     for (final entry in editableAddOns!.entries) {
       final addOnId = entry.key;
       final addOnData = entry.value;
@@ -759,25 +755,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final perUnitPrice = _safeToDouble(addOnData['price']);
       final name = addOnData['name'] as String?;
 
-      debugPrint('Raw Add-on: $name (ID: $addOnId)');
-      debugPrint('  - Stored totalPrice: $storedTotalPrice');
-      debugPrint('  - Per-unit price: $perUnitPrice');
-      debugPrint('  - Character count: $characterCount');
+      //('Raw Add-on: $name (ID: $addOnId)');
+      //('  - Stored totalPrice: $storedTotalPrice');
+      //('  - Per-unit price: $perUnitPrice');
+      //('  - Character count: $characterCount');
 
       if (storedTotalPrice > 0) {
         // Calculate raw total by removing the transaction fee from stored totalPrice
         final rawTotal = storedTotalPrice / 1.0354;
         total += rawTotal;
-        debugPrint('  - Raw total (totalPrice / 1.0354): ₹$rawTotal');
+        //('  - Raw total (totalPrice / 1.0354): ₹$rawTotal');
       } else if (perUnitPrice > 0) {
         // Fallback: calculate raw total from per-unit price * quantity
         final rawTotal = perUnitPrice * characterCount;
         total += rawTotal;
-        debugPrint('  - Raw total (per-unit * count): ₹$rawTotal');
+        //('  - Raw total (per-unit * count): ₹$rawTotal');
       }
     }
-    debugPrint('Selected add-ons raw total (before fees): ₹$total');
-    debugPrint('=== END RAW ADD-ON CALCULATION DEBUG ===');
+    //('Selected add-ons raw total (before fees): ₹$total');
+    //('=== END RAW ADD-ON CALCULATION DEBUG ===');
     return total;
   }
 
@@ -2964,28 +2960,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ? _safeToDouble(advancePaymentData!['total_price_user_sees'])
         : canvasResult['total_price_user_sees']!;
 
-    debugPrint(
-      'Canvas calculation - Advance: $payableAmount, Total: ${canvasResult['total_price_user_sees']}, Remaining: $remainingAmount',
-    );
+    
 
-    debugPrint('=== BILL DETAILS CALCULATION ===');
-    debugPrint('Service price: $servicePrice');
-    debugPrint('Service with fees: $servicePriceWithFees');
-    debugPrint('Add-ons total: $addOnsTotal');
-    debugPrint('Add-ons with fees: $addOnsPriceWithFees');
-    debugPrint('Coupon discount: $couponDiscount');
-    debugPrint(
-      'Local total: $totalAmount (should be ${servicePriceWithFees + addOnsPriceWithFees})',
-    );
-    debugPrint(
-      'RPC total: ${advancePaymentData?['total_price_user_sees'] ?? 'N/A'}',
-    );
-    debugPrint('Canvas total: ${canvasResult['total_price_user_sees']}');
-    debugPrint(
-      'Bill Details - Total: $totalAmount, Payable: $payableAmount, RPC Data: ${advancePaymentData != null}',
-    );
+   
     if (advancePaymentData != null) {
-      debugPrint('RPC Data: $advancePaymentData');
+      //('RPC Data: $advancePaymentData');
     }
 
     return Container(
@@ -3577,13 +3556,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final userAdvancePayment = PriceRounding.applyFinalRounding(userAdvancePaymentRaw);
     final remainingPayment = PriceRounding.applyFinalRounding(totalPriceUserSees - userAdvancePayment);
 
-    debugPrint('Canvas Formula Debug:');
-    debugPrint('S (service): $S');
-    debugPrint('A (add-ons raw): $A');
-    debugPrint('serviceWithAll: $serviceWithAll');
-    debugPrint('addonsWithAll: $addonsWithAll');
-    debugPrint('totalPriceUserSees (rounded): $totalPriceUserSees');
-    debugPrint('userAdvancePayment (rounded): $userAdvancePayment');
+    //('Canvas Formula Debug:');
+    //('S (service): $S');
+    //('A (add-ons raw): $A');
+    //('serviceWithAll: $serviceWithAll');
+    //('addonsWithAll: $addonsWithAll');
+    //('totalPriceUserSees (rounded): $totalPriceUserSees');
+    //('userAdvancePayment (rounded): $userAdvancePayment');
 
     return {
       'total_price_user_sees': totalPriceUserSees,
@@ -3618,8 +3597,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       try {
         return widget.selectedTimeSlot!.basePrice;
       } catch (e) {
-        debugPrint('❌ Error accessing theater time slot basePrice: $e');
-        debugPrint('❌ Falling back to service listing price');
+        //('❌ Error accessing theater time slot basePrice: $e');
+        //('❌ Falling back to service listing price');
       }
     }
 
@@ -3631,24 +3610,21 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     try {
       // Use displayOfferPrice to get calculated price if available
       offerPrice = widget.service.displayOfferPrice ?? widget.service.offerPrice;
-      debugPrint('💰 Using display offer price: $offerPrice (calculated: ${widget.service.calculatedPrice}, base: ${widget.service.offerPrice})');
+      //('💰 Using display offer price: $offerPrice (calculated: ${widget.service.calculatedPrice}, base: ${widget.service.offerPrice})');
     } catch (e) {
-      debugPrint('⚠️ Error accessing service offerPrice: $e');
+      //('⚠️ Error accessing service offerPrice: $e');
       offerPrice = null;
     }
 
     try {
       originalPrice = widget.service.displayOriginalPrice ?? widget.service.originalPrice;
     } catch (e) {
-      debugPrint('⚠️ Error accessing service originalPrice: $e');
+      //('⚠️ Error accessing service originalPrice: $e');
       originalPrice = null;
     }
 
     final price = offerPrice ?? originalPrice ?? 0.0;
-    debugPrint(
-      '💰 Service price calculated: $price (offer: $offerPrice, original: $originalPrice)',
-    );
-    debugPrint('💰 Distance: ${widget.service.distanceKm} km, Extra charges applied: ${widget.service.isPriceAdjusted}');
+    
     return price;
   }
 
@@ -3731,7 +3707,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         final month = date.month.toString().padLeft(2, '0');
         return '$day/$month/${date.year}';
       } catch (e) {
-        debugPrint('❌ Error parsing date "$dateToUse": $e');
+        //('❌ Error parsing date "$dateToUse": $e');
         // Return the original string if parsing fails
         return dateToUse;
       }
@@ -4042,11 +4018,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     // Check if running on iOS Simulator (Razorpay doesn't work on iOS Simulator)
     if (Platform.isIOS && !kReleaseMode) {
       // In debug/profile mode on iOS, show warning about simulator limitation
-      debugPrint('⚠️ WARNING: You are running on iOS Simulator. Razorpay payment UI may not appear.');
-      debugPrint('⚠️ For testing Razorpay, please use:');
-      debugPrint('   1. A real iOS device (iPhone/iPad)');
-      debugPrint('   2. An Android emulator');
-      debugPrint('   3. A real Android device');
+      //('⚠️ WARNING: You are running on iOS Simulator. Razorpay payment UI may not appear.');
+      //('⚠️ For testing Razorpay, please use:');
+      //('   1. A real iOS device (iPhone/iPad)');
+      //('   2. An Android emulator');
+      //('   3. A real Android device');
     }
 
     try {
@@ -4188,7 +4164,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           'Guest User';
 
       // PAYMENT FIRST APPROACH: Initialize Razorpay and process payment BEFORE creating order
-      debugPrint('💳 Initiating payment: ₹$payableAmount');
+      //('💳 Initiating payment: ₹$payableAmount');
 
       // Initialize Razorpay service
       final paymentRepository = ref.read(paymentRepositoryProvider);
@@ -4231,7 +4207,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
         onPaymentSuccess: (paymentTransactionId, razorpayPaymentId) async {
           // Payment succeeded! Now create the order
-          debugPrint('✅ Payment completed: $razorpayPaymentId');
+          //('✅ Payment completed: $razorpayPaymentId');
 
           try {
             // Get order creation notifier
@@ -4266,7 +4242,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               occasion: occasion,
             );
 
-            debugPrint('✅ Order created: ${order.id}');
+            //('✅ Order created: ${order.id}');
 
             // Link payment transaction to the created order
             final paymentRepository = ref.read(paymentRepositoryProvider);
@@ -4300,7 +4276,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
               );
             }
           } catch (e) {
-            debugPrint('❌ Error creating order: $e');
+            //('❌ Error creating order: $e');
             // Payment succeeded but order creation failed - this needs manual intervention
             // Show error to user and log for admin review
             if (mounted) {
@@ -4322,7 +4298,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         },
         onPaymentFailure: (error) {
           // Payment failed - no order created
-          debugPrint('❌ Payment failed: $error');
+          //('❌ Payment failed: $error');
 
           // Reset processing state
           if (mounted) {
@@ -4367,13 +4343,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           );
         }
       } else {
-        debugPrint('💳 Razorpay payment gateway opened - waiting for user action');
+        //('💳 Razorpay payment gateway opened - waiting for user action');
       }
     } catch (e) {
-      debugPrint('❌ [CHECKOUT] ERROR: Failed to initiate payment');
-      debugPrint('❌ [CHECKOUT] Error type: ${e.runtimeType}');
-      debugPrint('❌ [CHECKOUT] Error message: $e');
-      debugPrint('❌ [CHECKOUT] Full error details: ${e.toString()}');
+      //('❌ [CHECKOUT] ERROR: Failed to initiate payment');
+      //('❌ [CHECKOUT] Error type: ${e.runtimeType}');
+      //('❌ [CHECKOUT] Error message: $e');
+      //('❌ [CHECKOUT] Full error details: ${e.toString()}');
 
       if (mounted) {
         setState(() {
@@ -4878,9 +4854,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         );
       }
 
-      debugPrint('✅ Phone number saved to profile: $phoneNumber');
+      //('✅ Phone number saved to profile: $phoneNumber');
     } catch (e) {
-      debugPrint('❌ Error saving phone number: $e');
+      //('❌ Error saving phone number: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -4932,7 +4908,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           isLoadingVendorGst = false;
         });
       }
-      debugPrint('Error loading vendor GST status: $e');
+      //('Error loading vendor GST status: $e');
     }
   }
 
@@ -4949,9 +4925,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final addOnsTotal =
           _calculateSelectedAddOnsRawTotal(); // Use raw total for RPC
 
-      debugPrint(
-        'Calling RPC with: vendor_id=${widget.service.vendorId}, service_price=$servicePrice, addons_raw_total=$addOnsTotal',
-      );
+      
 
       // Call the Supabase RPC function
       final response = await Supabase.instance.client.rpc(
@@ -4968,10 +4942,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           advancePaymentData = response as Map<String, dynamic>;
           isLoadingAdvancePayment = false;
         });
-        debugPrint('RPC Response: $response');
-        debugPrint(
-          'User advance payment: ${(response as Map<String, dynamic>)['user_advance_payment']}',
-        );
+       
       }
     } catch (e) {
       if (mounted) {
@@ -4980,7 +4951,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           isLoadingAdvancePayment = false;
         });
       }
-      debugPrint('Error calculating advance payment: $e');
+      //('Error calculating advance payment: $e');
     }
   }
 

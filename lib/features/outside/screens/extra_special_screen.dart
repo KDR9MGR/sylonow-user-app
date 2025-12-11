@@ -44,7 +44,7 @@ class _ExtraSpecialScreenState extends ConsumerState<ExtraSpecialScreen> {
   Widget build(BuildContext context) {
     final extraSpecials = ref.watch(addonsByCategoryProvider(AddonCategoryParams(
       theaterId: widget.screen.theaterId,
-      category: 'extra_special',
+      category: 'extra special service',
     )));
 
     return Scaffold(
@@ -214,12 +214,13 @@ class _ExtraSpecialScreenState extends ConsumerState<ExtraSpecialScreen> {
       child: InkWell(
         onTap: () {
           setState(() {
+            final extraSpecialPriceWithTax = extraSpecial.price * 1.0354; // Add 3.54% tax
             if (isSelected) {
               _selectedExtraSpecials.remove(extraSpecial);
-              _totalExtraSpecialPrice -= extraSpecial.price;
+              _totalExtraSpecialPrice -= extraSpecialPriceWithTax;
             } else {
               _selectedExtraSpecials.add(extraSpecial);
-              _totalExtraSpecialPrice += extraSpecial.price;
+              _totalExtraSpecialPrice += extraSpecialPriceWithTax;
             }
           });
         },
@@ -295,7 +296,7 @@ class _ExtraSpecialScreenState extends ConsumerState<ExtraSpecialScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      extraSpecial.formattedPrice,
+                      '₹${(extraSpecial.price * 1.0354).round()}',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -331,7 +332,7 @@ class _ExtraSpecialScreenState extends ConsumerState<ExtraSpecialScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
+    return Center(    
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

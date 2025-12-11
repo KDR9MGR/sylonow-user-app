@@ -64,7 +64,7 @@ class OnboardingService {
         phoneNumber: userPhone,
       );
     } catch (e) {
-      debugPrint('Failed to save userName to database: $e');
+      //('Failed to save userName to database: $e');
       // Don't throw - keep local data intact
     }
   }
@@ -98,7 +98,7 @@ class OnboardingService {
         phoneNumber: userPhone,
       );
     } catch (e) {
-      debugPrint('Failed to save occasion to database: $e');
+      //('Failed to save occasion to database: $e');
       // Don't throw - keep local data intact
     }
   }
@@ -123,7 +123,7 @@ class OnboardingService {
         phoneNumber: userPhone,
       );
     } catch (e) {
-      debugPrint('Failed to save celebration date to database: $e');
+      //('Failed to save celebration date to database: $e');
       // Don't throw - keep local data intact
     }
   }
@@ -148,7 +148,7 @@ class OnboardingService {
         phoneNumber: userPhone,
       );
     } catch (e) {
-      debugPrint('Failed to save celebration time to database: $e');
+      //('Failed to save celebration time to database: $e');
       // Don't throw - keep local data intact
     }
   }

@@ -39,14 +39,14 @@ class LogoutService {
       try {
         final welcomeService = ref.read(welcomePreferencesServiceProvider);
         await welcomeService.clearAllPreferences();
-        debugPrint('✅ Welcome preferences cleared successfully');
+        //('✅ Welcome preferences cleared successfully');
       } catch (e) {
-        debugPrint('⚠️ Error clearing welcome preferences: $e');
+        //('⚠️ Error clearing welcome preferences: $e');
       }
 
-      debugPrint('All providers cleared successfully');
+      //('All providers cleared successfully');
     } catch (e) {
-      debugPrint('Error clearing providers: $e');
+      //('Error clearing providers: $e');
       // Don't rethrow as this is not critical
     }
   }
@@ -62,9 +62,9 @@ class LogoutService {
       // Final cleanup
       await clearAllProviders(ref);
       
-      debugPrint('Complete logout performed successfully');
+      //('Complete logout performed successfully');
     } catch (e) {
-      debugPrint('Error during complete logout: $e');
+      //('Error during complete logout: $e');
       rethrow;
     }
   }

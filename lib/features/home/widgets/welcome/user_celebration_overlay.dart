@@ -84,12 +84,12 @@ class _UserCelebrationOverlayState extends ConsumerState<UserCelebrationOverlay>
             // Verify the save was successful
             final savedDate = await welcomeService.getCelebrationDate();
             if (savedDate != null) {
-              debugPrint('✅ Celebration date saved and verified: $celebrationDateStr');
+              //('✅ Celebration date saved and verified: $celebrationDateStr');
             } else {
-              debugPrint('⚠️ Celebration date save verification failed');
+              //('⚠️ Celebration date save verification failed');
             }
           } catch (e) {
-            debugPrint('⚠️ Error saving celebration date to preferences: $e');
+            //('⚠️ Error saving celebration date to preferences: $e');
           }
         }
 
@@ -101,7 +101,7 @@ class _UserCelebrationOverlayState extends ConsumerState<UserCelebrationOverlay>
         });
       }
     } catch (e) {
-      debugPrint('Error loading user celebration data: $e');
+      //('Error loading user celebration data: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;

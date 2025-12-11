@@ -98,7 +98,7 @@ class _ServiceFilterSheetState extends ConsumerState<ServiceFilterSheet> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading categories: $e');
+      //('Error loading categories: $e');
       if (mounted) {
         setState(() {
           _loadingCategories = false;

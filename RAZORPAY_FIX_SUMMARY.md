@@ -24,10 +24,10 @@ The issue was caused by razorpay_flutter package version 1.4.0, which has known 
 **Key additions**:
 ```dart
 // Added detailed logging
-debugPrint('🚀 [RAZORPAY] Opening Razorpay checkout with options: ${options.keys}');
-debugPrint('🚀 [RAZORPAY] Payment amount: ${options['amount']} paise');
-debugPrint('🚀 [RAZORPAY] Order ID: ${options['order_id']}');
-debugPrint('🚀 [RAZORPAY] Razorpay instance hashCode: ${_razorpay.hashCode}');
+//('🚀 [RAZORPAY] Opening Razorpay checkout with options: ${options.keys}');
+//('🚀 [RAZORPAY] Payment amount: ${options['amount']} paise');
+//('🚀 [RAZORPAY] Order ID: ${options['order_id']}');
+//('🚀 [RAZORPAY] Razorpay instance hashCode: ${_razorpay.hashCode}');
 
 // Added delay to ensure database commit
 await Future.delayed(const Duration(milliseconds: 300));
@@ -35,7 +35,7 @@ await Future.delayed(const Duration(milliseconds: 300));
 // Added error handling
 try {
   _razorpay.open(options);
-  debugPrint('✅ [RAZORPAY] Razorpay.open() called successfully');
+  //('✅ [RAZORPAY] Razorpay.open() called successfully');
 } catch (e, stackTrace) {
   // Handle and log errors
   await _paymentRepository.updatePaymentStatus(

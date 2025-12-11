@@ -90,7 +90,26 @@ extension ServiceListingModelExtensions on ServiceListingModel {
   }
 
   /// Get display original price (adjusted if available, otherwise original price)
+  /// When RPC provides calculated_price with distance, apply same formula to original price for strikethrough display
   double? get displayOriginalPrice {
+    // If we have RPC calculated price and distance info, calculate original price with ALL fees (distance + convenience + transaction)
+    if (calculatedPrice != null && distanceKm != null && originalPrice != null && offerPrice != null) {
+      // Apply same formula as RPC: original_price + distance_charges + convenience_fee + transaction_fee
+      final extraDistance = math.max(0.0, distanceKm! - (freeServiceKm ?? 0.0));
+      final extraCharges = extraDistance * (extraChargesPerKm ?? 0.0);
+
+      // Calculate base amount with distance charges
+      final baseWithDistance = originalPrice! + extraCharges;
+
+      // Add convenience fee (₹19) and transaction fee (3.54%)
+      const convenienceFee = 19.00;
+      const transactionFeeRate = 0.0354;
+      final transactionFee = baseWithDistance * transactionFeeRate;
+      final totalOriginalPrice = baseWithDistance + convenienceFee + transactionFee;
+
+      return PriceRounding.applyFinalRounding(totalOriginalPrice);
+    }
+
     return adjustedOriginalPrice ?? originalPrice;
   }
 
@@ -120,21 +139,35 @@ extension ServiceListingModelExtensions on ServiceListingModel {
     final c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a));
     final distance = earthRadius * c;
 
-    // Calculate dynamic price based on distance using the same formula as RPC
-    // Formula: base_price + MAX(0, (distance - free_service_km) × extra_charges_per_km)
+    // Calculate dynamic price based on distance using the SAME formula as RPC
+    // Formula: base_price + distance_charges + convenience_fee + transaction_fee
+    // This matches the get_nearby_services_with_price RPC function
+    const convenienceFee = 19.00; // ₹19 convenience fee
+    const transactionFeeRate = 0.0354; // 3.54% transaction fee
+
     double? dynamicPrice;
     if (offerPrice != null && freeServiceKm != null && extraChargesPerKm != null) {
       final extraDistance = math.max(0.0, distance - (freeServiceKm ?? 0.0));
       final extraCharges = extraDistance * (extraChargesPerKm ?? 0.0);
-      final calculatedPrice = (offerPrice ?? 0.0) + extraCharges;
+
+      // Apply same formula as RPC: base + distance + convenience + transaction
+      final baseWithDistance = (offerPrice ?? 0.0) + extraCharges;
+      final transactionFee = baseWithDistance * transactionFeeRate;
+      final totalPrice = baseWithDistance + convenienceFee + transactionFee;
+
       // Apply price rounding to ensure prices end with 49 or 99
-      dynamicPrice = PriceRounding.applyFinalRounding(calculatedPrice);
+      dynamicPrice = PriceRounding.applyFinalRounding(totalPrice);
     } else if (originalPrice != null && freeServiceKm != null && extraChargesPerKm != null) {
       final extraDistance = math.max(0.0, distance - (freeServiceKm ?? 0.0));
       final extraCharges = extraDistance * (extraChargesPerKm ?? 0.0);
-      final calculatedPrice = (originalPrice ?? 0.0) + extraCharges;
+
+      // Apply same formula as RPC: base + distance + convenience + transaction
+      final baseWithDistance = (originalPrice ?? 0.0) + extraCharges;
+      final transactionFee = baseWithDistance * transactionFeeRate;
+      final totalPrice = baseWithDistance + convenienceFee + transactionFee;
+
       // Apply price rounding to ensure prices end with 49 or 99
-      dynamicPrice = PriceRounding.applyFinalRounding(calculatedPrice);
+      dynamicPrice = PriceRounding.applyFinalRounding(totalPrice);
     }
 
     return copyWith(
@@ -143,93 +176,6 @@ extension ServiceListingModelExtensions on ServiceListingModel {
       adjustedOfferPrice: dynamicPrice,
       adjustedOriginalPrice: originalPrice != null ? PriceRounding.applyFinalRounding(originalPrice!) : null,
       isPriceAdjusted: dynamicPrice != null && dynamicPrice > (offerPrice ?? originalPrice ?? 0.0),
-    );
-  }
-
-  /// Create a copy with updated values
-  ServiceListingModel copyWith({
-    String? id,
-    String? vendorId,
-    String? name,
-    String? image,
-    String? description,
-    double? rating,
-    int? reviewsCount,
-    int? offersCount,
-    VendorModel? vendor,
-    String? promotionalTag,
-    List<String>? inclusions,
-    List<String>? exclusions,
-    double? originalPrice,
-    double? offerPrice,
-    bool? isFeatured,
-    DateTime? createdAt,
-    bool? isActive,
-    List<String>? photos,
-    String? category,
-    List<String>? venueTypes,
-    List<String>? themeTags,
-    List<Map<String, dynamic>>? addOns,
-    String? setupTime,
-    String? bookingNotice,
-    bool? customizationAvailable,
-    String? customizationNote,
-    List<String>? serviceEnvironment,
-    String? videoUrl,
-    String? decorationType,
-    bool? providesBanner,
-    String? bannerText,
-    double? latitude,
-    double? longitude,
-    double? freeServiceKm,
-    double? extraChargesPerKm,
-    double? distanceKm,
-    double? calculatedPrice,
-    double? adjustedOfferPrice,
-    double? adjustedOriginalPrice,
-    bool? isPriceAdjusted,
-  }) {
-    return ServiceListingModel(
-      id: id ?? this.id,
-      vendorId: vendorId ?? this.vendorId,
-      name: name ?? this.name,
-      image: image ?? this.image,
-      description: description ?? this.description,
-      rating: rating ?? this.rating,
-      reviewsCount: reviewsCount ?? this.reviewsCount,
-      offersCount: offersCount ?? this.offersCount,
-      vendor: vendor ?? this.vendor,
-      promotionalTag: promotionalTag ?? this.promotionalTag,
-      inclusions: inclusions ?? this.inclusions,
-      exclusions: exclusions ?? this.exclusions,
-      originalPrice: originalPrice ?? this.originalPrice,
-      offerPrice: offerPrice ?? this.offerPrice,
-      isFeatured: isFeatured ?? this.isFeatured,
-      createdAt: createdAt ?? this.createdAt,
-      isActive: isActive ?? this.isActive,
-      photos: photos ?? this.photos,
-      category: category ?? this.category,
-      venueTypes: venueTypes ?? this.venueTypes,
-      themeTags: themeTags ?? this.themeTags,
-      addOns: addOns ?? this.addOns,
-      setupTime: setupTime ?? this.setupTime,
-      bookingNotice: bookingNotice ?? this.bookingNotice,
-      customizationAvailable: customizationAvailable ?? this.customizationAvailable,
-      customizationNote: customizationNote ?? this.customizationNote,
-      serviceEnvironment: serviceEnvironment ?? this.serviceEnvironment,
-      videoUrl: videoUrl ?? this.videoUrl,
-      decorationType: decorationType ?? this.decorationType,
-      providesBanner: providesBanner ?? this.providesBanner,
-      bannerText: bannerText ?? this.bannerText,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      freeServiceKm: freeServiceKm ?? this.freeServiceKm,
-      extraChargesPerKm: extraChargesPerKm ?? this.extraChargesPerKm,
-      distanceKm: distanceKm ?? this.distanceKm,
-      calculatedPrice: calculatedPrice ?? this.calculatedPrice,
-      adjustedOfferPrice: adjustedOfferPrice ?? this.adjustedOfferPrice,
-      adjustedOriginalPrice: adjustedOriginalPrice ?? this.adjustedOriginalPrice,
-      isPriceAdjusted: isPriceAdjusted ?? this.isPriceAdjusted,
     );
   }
 } 

@@ -103,9 +103,9 @@ class _TheaterScreenDetailScreenState
                 delegate: SliverChildListDelegate([
                   _buildScreenHeader(),
                   _buildDateSelector(),
+                  _buildAddonsSection(),
                   _buildTimeSlotSection(timeSlots),
                   _buildPackagesSection(),
-                  _buildAddonsSection(),
                   _buildScreenDetails(),
                   _buildAmenities(),
                   const SizedBox(height: 100), // Space for bottom bar
@@ -1040,14 +1040,19 @@ class _TheaterScreenDetailScreenState
   }
 
   Widget _buildAddonsSection() {
-    final addons = ref.watch(addonsByCategoryProvider(AddonCategoryParams(
-      theaterId: widget.screen.theaterId,
-      category: 'add_on',
-    )));
+    // Fetch only Gift category add-ons by theater_id
+    final giftAddons = ref.watch(
+      addonsByCategoryProvider(
+        AddonCategoryParams(
+          theaterId: widget.screen.theaterId,
+          category: 'Gift',
+        ),
+      ),
+    );
 
-    return addons.when(
-      data: (addonsList) {
-        if (addonsList.isEmpty) {
+    return giftAddons.when(
+      data: (giftList) {
+        if (giftList.isEmpty) {
           return const SizedBox.shrink();
         }
 
@@ -1072,13 +1077,17 @@ class _TheaterScreenDetailScreenState
                 height: 280,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: addonsList.length,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                  ),
+                  itemCount: giftList.length,
                   itemBuilder: (context, index) {
-                    final addon = addonsList[index];
+                    final addon = giftList[index];
                     return Container(
                       width: 180,
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                      ),
                       child: _buildAddonCard(addon),
                     );
                   },
@@ -1088,27 +1097,16 @@ class _TheaterScreenDetailScreenState
           ),
         );
       },
-      loading: () => Container(
-        height: 280,
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: const Center(
-          child: CircularProgressIndicator(
-            color: Colors.pink,
-          ),
-        ),
-      ),
-      error: (error, stack) => Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        padding: const EdgeInsets.all(16),
-        child: Text(
-          'Error loading add-ons: $error',
-          style: const TextStyle(
-            color: Colors.red,
-            fontSize: 14,
-            fontFamily: 'Okra',
-          ),
-        ),
-      ),
+      loading: () => _buildAddonsLoading(),
+      error: (error, stack) => const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildAddonsLoading() {
+    return Container(
+      height: 280,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: const Center(child: CircularProgressIndicator(color: Colors.pink)),
     );
   }
 
@@ -1118,12 +1116,13 @@ class _TheaterScreenDetailScreenState
     return GestureDetector(
       onTap: () {
         setState(() {
+          final addonPriceWithTax = addon.price * 1.0354; // Add 3.54% tax
           if (isSelected) {
             _selectedAddons.remove(addon);
-            _totalAddonPrice -= addon.price;
+            _totalAddonPrice -= addonPriceWithTax;
           } else {
             _selectedAddons.add(addon);
-            _totalAddonPrice += addon.price;
+            _totalAddonPrice += addonPriceWithTax;
           }
         });
       },
@@ -1139,123 +1138,133 @@ class _TheaterScreenDetailScreenState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // Image Section
-          Container(
-            height: 157,
-            margin: const EdgeInsets.all(4),
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(11),
-              child: addon.hasImage
-                  ? CachedNetworkImage(
-                      imageUrl: addon.imageUrl!,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[200],
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            color: Colors.pink,
-                            strokeWidth: 2,
+            // Image Section
+            Container(
+              height: 157,
+              margin: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(11),
+                child: addon.hasImage
+                    ? CachedNetworkImage(
+                        imageUrl: addon.imageUrl!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        placeholder: (context, url) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.pink,
+                              strokeWidth: 2,
+                            ),
                           ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
+                        errorWidget: (context, url, error) => Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported,
+                              color: Colors.grey,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                      )
+                    : Container(
                         color: Colors.grey[200],
                         child: const Center(
                           child: Icon(
-                            Icons.image_not_supported,
+                            Icons.image,
                             color: Colors.grey,
                             size: 40,
                           ),
                         ),
                       ),
-                    )
-                  : Container(
-                      color: Colors.grey[200],
-                      child: const Center(
-                        child: Icon(Icons.image, color: Colors.grey, size: 40),
-                      ),
-                    ),
-            ),
-          ),
-          // Content Section
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    addon.displayName,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      fontFamily: 'Okra',
-                      color: Color(0xFF1F2937),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 8),
-                  // Description
-                  Text(
-                    addon.displayDescription,
-                    style: const TextStyle(
-                      fontSize: 10,
-                      fontFamily: 'Okra',
-                      color: Color(0xFF1F2937),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const Spacer(),
-                  // Price Section
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        addon.formattedPrice,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Okra',
-                          color: Color(0xFF171717),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected ? AppTheme.primaryColor : AppTheme.primaryColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color: AppTheme.primaryColor,
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          isSelected ? 'Added' : 'Add',
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : AppTheme.primaryColor,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Okra',
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
               ),
             ),
-          ),
-        ],
-      ),
+            // Content Section
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title
+                    Text(
+                      addon.displayName,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Okra',
+                        color: Color(0xFF1F2937),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    // Description
+                    Text(
+                      addon.displayDescription,
+                      style: const TextStyle(
+                        fontSize: 10,
+                        fontFamily: 'Okra',
+                        color: Color(0xFF1F2937),
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const Spacer(),
+                    // Price Section
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          '₹${(addon.price * 1.0354).round()}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Okra',
+                            color: Color(0xFF171717),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.primaryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: AppTheme.primaryColor,
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            isSelected ? 'Added' : 'Add',
+                            style: TextStyle(
+                              color: isSelected
+                                  ? Colors.white
+                                  : AppTheme.primaryColor,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Okra',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

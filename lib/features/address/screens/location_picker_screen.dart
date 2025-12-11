@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
@@ -41,6 +43,17 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
   @override
   void initState() {
     super.initState();
+    // Android-specific debug logging
+    if (Platform.isAndroid && kDebugMode) {
+      //('╔════════════════════════════════════════════════════════════');
+      //('║ ANDROID MAP DEBUG - Location Picker Screen Initialized');
+      //('╠════════════════════════════════════════════════════════════');
+      //('║ Google Maps API Key (AndroidManifest.xml): AIzaSyB3WtSmaLqOuAh-642QcTUI2TM3skK0i_U');
+      //('║ Places API Key (HTTP): $_googleApiKey');
+      //('║ Package Name: com.sylonowusr.app');
+      //('║ Initial Position: ${_currentPosition.latitude}, ${_currentPosition.longitude}');
+      //('╚════════════════════════════════════════════════════════════');
+    }
     _getCurrentLocation();
   }
 
@@ -52,6 +65,11 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
 
   Future<void> _getCurrentLocation() async {
     setState(() => _isLoadingLocation = true);
+
+    if (Platform.isAndroid && kDebugMode) {
+      //('📍 [ANDROID] Getting current location...');
+    }
+
     try {
       final locationService = ref.read(locationServiceProvider);
 
@@ -82,6 +100,11 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
 
       if (position != null) {
         final newPosition = LatLng(position.latitude, position.longitude);
+
+        if (Platform.isAndroid && kDebugMode) {
+          //('✅ [ANDROID] Location obtained: ${newPosition.latitude}, ${newPosition.longitude}');
+        }
+
         setState(() {
           _currentPosition = newPosition;
           _pickedPosition = newPosition;
@@ -89,6 +112,11 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
 
         // Move camera to current location
         final controller = await _controller.future;
+
+        if (Platform.isAndroid && kDebugMode) {
+          //('📹 [ANDROID] Moving camera to location');
+        }
+
         controller.animateCamera(
           CameraUpdate.newCameraPosition(
             CameraPosition(
@@ -113,6 +141,11 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
         );
       }
     } catch (e) {
+      if (Platform.isAndroid && kDebugMode) {
+        //('❌ [ANDROID] Error getting location: $e');
+        //('Stack trace: ${StackTrace.current}');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error getting location: $e')),
@@ -120,6 +153,10 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
       }
     } finally {
       setState(() => _isLoadingLocation = false);
+
+      if (Platform.isAndroid && kDebugMode) {
+        //('🏁 [ANDROID] Location loading completed');
+      }
     }
   }
 
@@ -200,6 +237,10 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
   }
 
   Future<void> _getAddressFromLatLng(LatLng position) async {
+    if (Platform.isAndroid && kDebugMode) {
+      //('🔍 [ANDROID] Geocoding position: ${position.latitude}, ${position.longitude}');
+    }
+
     try {
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
@@ -208,12 +249,22 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
 
       if (placemarks.isNotEmpty) {
         final place = placemarks.first;
+        final address = _formatAddress(place);
+
+        if (Platform.isAndroid && kDebugMode) {
+          //('✅ [ANDROID] Address found: $address');
+        }
+
         setState(() {
-          _selectedAddress = _formatAddress(place);
+          _selectedAddress = address;
         });
       }
     } catch (e) {
-      debugPrint('Error getting address: $e');
+      if (Platform.isAndroid && kDebugMode) {
+        //('❌ [ANDROID] Error getting address: $e');
+      } else {
+        //('Error getting address: $e');
+      }
     }
   }
 
@@ -251,6 +302,10 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
   }
 
   Future<void> _selectLocation(Prediction prediction) async {
+    if (Platform.isAndroid && kDebugMode) {
+      //('📌 [ANDROID] Place selected: ${prediction.description}');
+    }
+
     // Get place details using geocoding
     try {
       // First try to get coordinates from prediction if available
@@ -262,16 +317,16 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
           double.parse(prediction.lat!),
           double.parse(prediction.lng!),
         );
-        debugPrint('Using coordinates from prediction: ${newPosition.latitude}, ${newPosition.longitude}');
+        //('Using coordinates from prediction: ${newPosition.latitude}, ${newPosition.longitude}');
       } else {
         // Fallback to geocoding
-        debugPrint('Geocoding address: ${prediction.description}');
+        //('Geocoding address: ${prediction.description}');
         final locations = await locationFromAddress(prediction.description ?? '');
 
         if (locations.isNotEmpty) {
           final location = locations.first;
           newPosition = LatLng(location.latitude, location.longitude);
-          debugPrint('Using geocoded coordinates: ${newPosition.latitude}, ${newPosition.longitude}');
+          //('Using geocoded coordinates: ${newPosition.latitude}, ${newPosition.longitude}');
         }
       }
 
@@ -305,7 +360,7 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error selecting location: $e');
+      //('Error selecting location: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error selecting location: $e')),
@@ -335,6 +390,10 @@ class _LocationPickerScreenState extends ConsumerState<LocationPickerScreen> {
               zoom: 16.0,
             ),
             onMapCreated: (GoogleMapController controller) {
+              if (Platform.isAndroid && kDebugMode) {
+                //('🗺️ [ANDROID] Google Map created successfully!');
+                //('✅ [ANDROID] Map is rendering - API key is working');
+              }
               _controller.complete(controller);
             },
             onCameraMove: _onCameraMove,

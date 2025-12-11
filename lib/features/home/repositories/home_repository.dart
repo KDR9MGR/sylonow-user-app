@@ -40,7 +40,7 @@ class HomeRepository {
   /// Returns a vendor model or null if not found
   Future<VendorModel?> getVendorById(String vendorId) async {
     try {
-      debugPrint('🔍 HomeRepository: Fetching vendor with ID: $vendorId');
+      //('🔍 HomeRepository: Fetching vendor with ID: $vendorId');
       final response = await _supabase
           .from('vendors') 
           .select()
@@ -48,17 +48,17 @@ class HomeRepository {
           .maybeSingle();
 
       if (response == null) {
-        debugPrint('🔍 HomeRepository: No vendor found with ID: $vendorId');
+        //('🔍 HomeRepository: No vendor found with ID: $vendorId');
         return null;
       }
 
-      debugPrint('🔍 HomeRepository: Raw vendor response: $response');
+      //('🔍 HomeRepository: Raw vendor response: $response');
       final vendor = VendorModel.fromJson(response);
-      debugPrint('🔍 HomeRepository: Parsed vendor model: $vendor');
+      //('🔍 HomeRepository: Parsed vendor model: $vendor');
       return vendor;
     } catch (e, stackTrace) {
-      debugPrint('❌ HomeRepository: Error fetching vendor $vendorId: $e');
-      debugPrint('❌ HomeRepository: Stack trace: $stackTrace');
+      //('❌ HomeRepository: Error fetching vendor $vendorId: $e');
+      //('❌ HomeRepository: Stack trace: $stackTrace');
       return null;
     }
   }
@@ -201,7 +201,7 @@ class HomeRepository {
     try {
       // If no coordinates provided, return all services (fallback)
       if (userLat == null || userLon == null) {
-        debugPrint('🔍 No coordinates provided, returning all services');
+        //('🔍 No coordinates provided, returning all services');
         final response = await _supabase
             .from('service_listings')
             .select('''
@@ -216,7 +216,6 @@ class HomeRepository {
             ''')
             .eq('is_active', true)
             .eq('is_verified', true)
-            .eq('vendors.verification_status', 'verified')
             .order('created_at', ascending: false)
             .limit(limit);
 
@@ -225,10 +224,9 @@ class HomeRepository {
             .toList();
       }
 
-      debugPrint('🔍 Filtering services within ${radiusKm}km of ($userLat, $userLon)');
+      debugPrint('🔍 Fetching services within ${radiusKm}km of ($userLat, $userLon) using RPC');
 
-      // Use RPC function to get services within radius with calculated prices
-      debugPrint('🔍 Calling RPC: get_nearby_services_with_price');
+      // Use RPC function for efficient distance-based filtering (like theater screens)
       final response = await _supabase.rpc(
         'get_nearby_services_with_price',
         params: {
@@ -239,19 +237,32 @@ class HomeRepository {
         },
       );
 
-      debugPrint('🔍 RPC Response: Found ${response.length} services within ${radiusKm}km radius with dynamic pricing');
-
-      // Log first service details for debugging
-      if (response.isNotEmpty && response is List) {
-        final firstService = response.first;
-        debugPrint('🔍 First service data: ${firstService['title']}, distance: ${firstService['distance_km']}, calculated_price: ${firstService['calculated_price']}');
+      if (response == null || response.isEmpty) {
+        debugPrint('📦 No services found within ${radiusKm}km');
+        return [];
       }
 
-      return (response as List)
-          .map<ServiceListingModel>((data) => ServiceListingModel.fromJson(data))
-          .toList();
+      debugPrint('📦 Fetched ${response.length} services from RPC');
+
+      final services = <ServiceListingModel>[];
+      for (var serviceData in response) {
+        try {
+          final serviceDataMap = Map<String, dynamic>.from(serviceData as Map);
+
+          // The RPC already returns calculated_price and distance_km
+          debugPrint('✅ Service: ${serviceDataMap['title']}, Distance: ${serviceDataMap['distance_km']} km, Price: ${serviceDataMap['calculated_price']}');
+
+          services.add(ServiceListingModel.fromJson(serviceDataMap));
+        } catch (e) {
+          debugPrint('⚠️ Error parsing service: $e');
+          continue;
+        }
+      }
+
+      debugPrint('📊 Returning ${services.length} services');
+      return services;
     } catch (e) {
-      debugPrint('❌ Error fetching nearby services: $e');
+      //('❌ Error fetching nearby services: $e');
       // Fallback: return all services if RPC fails
       try {
         final response = await _supabase
@@ -286,7 +297,7 @@ class HomeRepository {
   /// Returns the service details if found, with flexible conditions for debugging
   Future<ServiceListingModel?> getServiceById(String serviceId) async {
     try {
-      debugPrint('🔍 Searching for service with ID: $serviceId');
+      //('🔍 Searching for service with ID: $serviceId');
       
       // First try with all conditions
       try {
@@ -314,10 +325,10 @@ class HomeRepository {
             .eq('vendors.is_online', true)
             .single();
 
-        debugPrint('✅ Service found with strict conditions');
+        //('✅ Service found with strict conditions');
         return ServiceListingModel.fromJson(strictResponse);
       } catch (strictError) {
-        debugPrint('❌ Service not found with strict conditions: $strictError');
+        //('❌ Service not found with strict conditions: $strictError');
       }
 
       // If strict conditions fail, try with relaxed conditions for debugging
@@ -343,33 +354,33 @@ class HomeRepository {
             .maybeSingle();
 
         if (relaxedResponse == null) {
-          debugPrint('❌ Service not found with ID: $serviceId');
+          //('❌ Service not found with ID: $serviceId');
           return null;
         }
 
-        debugPrint('📋 Service found with relaxed conditions:');
-        debugPrint('  - Service active: ${relaxedResponse['is_active']}');
-        debugPrint('  - Service verified: ${relaxedResponse['is_verified']}');
+        //('📋 Service found with relaxed conditions:');
+        //('  - Service active: ${relaxedResponse['is_active']}');
+        //('  - Service verified: ${relaxedResponse['is_verified']}');
         
         final vendorData = relaxedResponse['vendors'];
         if (vendorData != null) {
-          debugPrint('  - Vendor accessible: true');
-          debugPrint('  - Vendor online: ${vendorData['is_online']}');
-          debugPrint('  - Vendor verified: ${vendorData['is_verified']}');
+          //('  - Vendor accessible: true');
+          //('  - Vendor online: ${vendorData['is_online']}');
+          //('  - Vendor verified: ${vendorData['is_verified']}');
         } else {
-          debugPrint('  - Vendor accessible: false (due to RLS policy)');
-          debugPrint('  - Service will be shown but booking may be disabled');
+          //('  - Vendor accessible: false (due to RLS policy)');
+          //('  - Service will be shown but booking may be disabled');
         }
 
         // Return the service even with relaxed conditions
         return ServiceListingModel.fromJson(relaxedResponse);
       } catch (relaxedError) {
-        debugPrint('❌ Service not found even with relaxed conditions: $relaxedError');
+        //('❌ Service not found even with relaxed conditions: $relaxedError');
       }
 
       return null;
     } catch (e) {
-      debugPrint('❌ Error in getServiceById: $e');
+      //('❌ Error in getServiceById: $e');
       return null;
     }
   }
@@ -1117,7 +1128,7 @@ class HomeRepository {
   /// Returns a list of service addons from the service_add_ons table
   Future<List<dynamic>> getServiceAddons(String vendorId) async {
     try {
-      debugPrint('🔍 HomeRepository: Fetching addons for vendor ID: $vendorId');
+      //('🔍 HomeRepository: Fetching addons for vendor ID: $vendorId');
       
       final response = await _supabase
           .from('service_add_ons')
@@ -1126,7 +1137,7 @@ class HomeRepository {
           .eq('is_available', true)
           .order('sort_order', ascending: true);
 
-      debugPrint('✅ HomeRepository: Found ${response.length} addons for vendor $vendorId');
+      //('✅ HomeRepository: Found ${response.length} addons for vendor $vendorId');
       
       return response.map((json) {
         return {
@@ -1145,7 +1156,7 @@ class HomeRepository {
         };
       }).toList();
     } catch (e) {
-      debugPrint('❌ HomeRepository: Failed to fetch service addons: $e');
+      //('❌ HomeRepository: Failed to fetch service addons: $e');
       throw Exception('Failed to fetch service addons: $e');
     }
   }
@@ -1155,14 +1166,14 @@ class HomeRepository {
   /// Returns list of booked time slots in 'hh:mm a' format
   Future<List<String>> getExistingBookings(String serviceId, String date) async {
     try {
-      debugPrint('🔍 HomeRepository: Fetching bookings for service $serviceId on $date');
+      //('🔍 HomeRepository: Fetching bookings for service $serviceId on $date');
       
       // Query for orders on the specific date
       // booking_date is a timestamp, so we need to filter by date range
       final startOfDay = '${date}T00:00:00Z';
       final endOfDay = '${date}T23:59:59Z';
       
-      debugPrint('🔍 Querying orders from $startOfDay to $endOfDay');
+      //('🔍 Querying orders from $startOfDay to $endOfDay');
       
       final response = await _supabase
           .from('orders')
@@ -1174,21 +1185,21 @@ class HomeRepository {
           .neq('status', 'completed') // Exclude completed bookings
           .order('booking_time');
 
-      debugPrint('🔍 Raw response: $response');
+      //('🔍 Raw response: $response');
       
       if (response.isEmpty) {
-        debugPrint('🔍 HomeRepository: No existing bookings found');
+        //('🔍 HomeRepository: No existing bookings found');
         return [];
       }
 
       final bookedTimes = <String>[];
       for (final booking in response) {
-        debugPrint('🔍 Processing booking: $booking');
+        //('🔍 Processing booking: $booking');
         final bookingTime = booking['booking_time'] as String?;
         final bookingDate = booking['booking_date'] as String?;
         final status = booking['status'] as String?;
         
-        debugPrint('🔍 Booking details: time=$bookingTime, date=$bookingDate, status=$status');
+        //('🔍 Booking details: time=$bookingTime, date=$bookingDate, status=$status');
         
         if (bookingTime != null) {
           // Convert time from HH:mm:ss or HH:mm format to hh:mm a format
@@ -1201,17 +1212,17 @@ class HomeRepository {
             final formattedTime = DateFormat('hh:mm a').format(dateTime);
             bookedTimes.add(formattedTime);
             
-            debugPrint('🔍 Found booked time: $bookingTime -> $formattedTime');
+            //('🔍 Found booked time: $bookingTime -> $formattedTime');
           } catch (e) {
-            debugPrint('❌ Error parsing booking time $bookingTime: $e');
+            //('❌ Error parsing booking time $bookingTime: $e');
           }
         }
       }
 
-      debugPrint('🔍 HomeRepository: Found ${bookedTimes.length} booked time slots');
+      //('🔍 HomeRepository: Found ${bookedTimes.length} booked time slots');
       return bookedTimes;
     } catch (e) {
-      debugPrint('❌ HomeRepository: Failed to fetch existing bookings: $e');
+      //('❌ HomeRepository: Failed to fetch existing bookings: $e');
       throw Exception('Failed to fetch existing bookings: $e');
     }
   }
@@ -1219,7 +1230,7 @@ class HomeRepository {
   /// Fetches all service listings for a vendor to get their booking notice periods
   Future<List<ServiceListingModel>> getVendorServiceListings(String vendorId) async {
     try {
-      debugPrint('🔍 HomeRepository: Fetching service listings for vendor $vendorId');
+      //('🔍 HomeRepository: Fetching service listings for vendor $vendorId');
       
       final response = await _supabase
           .from('service_listings')
@@ -1231,14 +1242,14 @@ class HomeRepository {
         try {
           services.add(ServiceListingModel.fromJson(item));
         } catch (e) {
-          debugPrint('❌ Error parsing service listing: $e');
+          //('❌ Error parsing service listing: $e');
         }
       }
 
-      debugPrint('🔍 Found ${services.length} service listings for vendor $vendorId');
+      //('🔍 Found ${services.length} service listings for vendor $vendorId');
       return services;
     } catch (e) {
-      debugPrint('❌ HomeRepository: Failed to fetch vendor service listings: $e');
+      //('❌ HomeRepository: Failed to fetch vendor service listings: $e');
       throw Exception('Failed to fetch vendor service listings: $e');
     }
   }
@@ -1246,7 +1257,7 @@ class HomeRepository {
   /// Fetches all active bookings for a vendor within a date range
   Future<List<Map<String, dynamic>>> getVendorBookings(String vendorId, DateTime startDate, DateTime endDate) async {
     try {
-      debugPrint('🔍 HomeRepository: Fetching vendor bookings for $vendorId from ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}');
+      //('🔍 HomeRepository: Fetching vendor bookings for $vendorId from ${DateFormat('yyyy-MM-dd').format(startDate)} to ${DateFormat('yyyy-MM-dd').format(endDate)}');
       
       final startOfRange = DateFormat('yyyy-MM-dd').format(startDate);
       final endOfRange = DateFormat('yyyy-MM-dd').format(endDate);
@@ -1261,10 +1272,10 @@ class HomeRepository {
           .neq('status', 'completed')
           .order('booking_date');
 
-      debugPrint('🔍 Found ${response.length} active vendor bookings');
+      //('🔍 Found ${response.length} active vendor bookings');
       return List<Map<String, dynamic>>.from(response);
     } catch (e) {
-      debugPrint('❌ HomeRepository: Failed to fetch vendor bookings: $e');
+      //('❌ HomeRepository: Failed to fetch vendor bookings: $e');
       throw Exception('Failed to fetch vendor bookings: $e');
     }
   }
@@ -1272,7 +1283,7 @@ class HomeRepository {
   /// Calculates blocked dates for a vendor based on existing bookings and their notice periods
   Future<List<DateTime>> getVendorBlockedDates(String vendorId) async {
     try {
-      debugPrint('🔍 HomeRepository: Calculating blocked dates for vendor $vendorId');
+      //('🔍 HomeRepository: Calculating blocked dates for vendor $vendorId');
       
       // Get all service listings for this vendor to know their booking notice periods
       final vendorServices = await getVendorServiceListings(vendorId);
@@ -1303,7 +1314,7 @@ class HomeRepository {
           // Calculate the blocked period: from (booking date - notice period) to booking date
           final blockStartDate = bookingDate.subtract(Duration(hours: noticeHours));
           
-          debugPrint('📅 Booking on ${DateFormat('dd/MM/yyyy').format(bookingDate)} blocks from ${DateFormat('dd/MM/yyyy HH:mm').format(blockStartDate)} to ${DateFormat('dd/MM/yyyy').format(bookingDate)}');
+          //('📅 Booking on ${DateFormat('dd/MM/yyyy').format(bookingDate)} blocks from ${DateFormat('dd/MM/yyyy HH:mm').format(blockStartDate)} to ${DateFormat('dd/MM/yyyy').format(bookingDate)}');
           
           // Add all dates in the blocked period
           DateTime current = DateTime(blockStartDate.year, blockStartDate.month, blockStartDate.day);
@@ -1315,15 +1326,15 @@ class HomeRepository {
           }
           
         } catch (e) {
-          debugPrint('❌ Error processing booking date: $e');
+          //('❌ Error processing booking date: $e');
         }
       }
       
-      debugPrint('🚫 Vendor $vendorId has ${blockedDates.length} blocked dates: ${blockedDates.map((d) => DateFormat('dd/MM').format(d)).join(', ')}');
+      //('🚫 Vendor $vendorId has ${blockedDates.length} blocked dates: ${blockedDates.map((d) => DateFormat('dd/MM').format(d)).join(', ')}');
       return blockedDates.toList()..sort();
       
     } catch (e) {
-      debugPrint('❌ HomeRepository: Failed to calculate blocked dates: $e');
+      //('❌ HomeRepository: Failed to calculate blocked dates: $e');
       throw Exception('Failed to calculate blocked dates: $e');
     }
   }

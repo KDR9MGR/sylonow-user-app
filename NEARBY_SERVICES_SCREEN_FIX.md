@@ -73,7 +73,7 @@ Widget build(BuildContext context) {
       },
       loading: () => _buildLoadingGrid(),
       error: (error, stack) {
-        debugPrint('Error loading nearby services: $error');
+        //('Error loading nearby services: $error');
         return _buildErrorState();
       },
     ),

@@ -33,7 +33,7 @@ class PriceCalculator {
         return (result['total_amount'] as num).toDouble();
       }
     } catch (e) {
-      debugPrint('Error calculating service listing price via RPC: $e');
+      //('Error calculating service listing price via RPC: $e');
       // Fallback to local calculation
     }
     
@@ -77,7 +77,7 @@ class PriceCalculator {
         return (result['total_amount'] as num).toDouble();
       }
     } catch (e) {
-      debugPrint('Error calculating service detail price via RPC: $e');
+      //('Error calculating service detail price via RPC: $e');
       // Fallback to local calculation
     }
     
@@ -212,7 +212,7 @@ class PriceCalculator {
         return (result['total_amount'] as num).toDouble();
       }
     } catch (e) {
-      debugPrint('Error calculating theater listing price via RPC: $e');
+      //('Error calculating theater listing price via RPC: $e');
       // Fallback to local calculation
     }
 
@@ -256,7 +256,7 @@ class PriceCalculator {
         return (result['total_amount'] as num).toDouble();
       }
     } catch (e) {
-      debugPrint('Error calculating theater detail price via RPC: $e');
+      //('Error calculating theater detail price via RPC: $e');
       // Fallback to local calculation
     }
 
@@ -322,7 +322,7 @@ class PriceCalculator {
         return breakdown;
       }
     } catch (e) {
-      debugPrint('Error getting theater price breakdown via RPC: $e');
+      //('Error getting theater price breakdown via RPC: $e');
       // Fallback to local calculation
     }
 

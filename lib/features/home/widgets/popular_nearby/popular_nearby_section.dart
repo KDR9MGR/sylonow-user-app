@@ -62,26 +62,26 @@ class PopularNearbySection extends ConsumerWidget {
           builder: (context, ref, child) {
             // Debug: Watch the selected address to see when it changes
             final selectedAddress = ref.watch(selectedAddressProvider);
-            debugPrint('🎯 PopularNearbySection: Building with address: ${selectedAddress?.address}');
-            debugPrint('🎯 PopularNearbySection: Coordinates: (${selectedAddress?.latitude}, ${selectedAddress?.longitude})');
+            //('🎯 PopularNearbySection: Building with address: ${selectedAddress?.address}');
+            //('🎯 PopularNearbySection: Coordinates: (${selectedAddress?.latitude}, ${selectedAddress?.longitude})');
 
             final servicesAsync = ref.watch(popularNearbyServicesProvider);
             return servicesAsync.when(
               data: (services) {
-                debugPrint('🎯 PopularNearbySection: Received ${services.length} services');
+                //('🎯 PopularNearbySection: Received ${services.length} services');
                 if (services.isNotEmpty) {
-                  debugPrint('🎯 First service: ${services.first.name}, distance: ${services.first.distanceKm} km, price: ${services.first.calculatedPrice}');
+                  //('🎯 First service: ${services.first.name}, distance: ${services.first.distanceKm} km, price: ${services.first.calculatedPrice}');
                 }
                 return services.isEmpty
                     ? _buildEmptyState()
                     : _buildServicesList(services, isLocationBased: true);
               },
               loading: () {
-                debugPrint('🎯 PopularNearbySection: Loading services...');
+                //('🎯 PopularNearbySection: Loading services...');
                 return _buildLoadingState();
               },
               error: (error, stack) {
-                debugPrint('🎯 PopularNearbySection: Error loading services: $error');
+                //('🎯 PopularNearbySection: Error loading services: $error');
                 return _buildErrorState();
               },
             );
@@ -93,7 +93,7 @@ class PopularNearbySection extends ConsumerWidget {
 
   Widget _buildServicesList(
     List<ServiceListingModel> services, {
-    bool isLocationBased = false,
+    bool isLocationBased = true,
   }) {
     return ListView.separated(
       shrinkWrap: true,
@@ -124,18 +124,11 @@ class PopularNearbySection extends ConsumerWidget {
           extra: {
             'service': service, // Pass the entire service with calculated prices
             'serviceName': service.name,
+            // RPC already includes location fees and taxes - use directly
             'price': service.displayOfferPrice != null
-                ? PriceCalculator.formatPriceAsInt(
-                    PriceCalculator.calculateTotalPriceWithTaxes(
-                      service.displayOfferPrice!,
-                    ),
-                  )
+                ? PriceCalculator.formatPriceAsInt(service.displayOfferPrice!)
                 : service.displayOriginalPrice != null
-                ? PriceCalculator.formatPriceAsInt(
-                    PriceCalculator.calculateTotalPriceWithTaxes(
-                      service.displayOriginalPrice!,
-                    ),
-                  )
+                ? PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!)
                 : null,
             'rating': (service.rating ?? 4.9).toStringAsFixed(1),
             'reviewCount': service.reviewsCount ?? 102,
@@ -254,11 +247,8 @@ class PopularNearbySection extends ConsumerWidget {
                       children: [
                         if (service.displayOfferPrice != null) ...[
                           Text(
-                            PriceCalculator.formatPriceAsInt(
-                              PriceCalculator.calculateTotalPriceWithTaxes(
-                                service.displayOfferPrice!,
-                              ),
-                            ),
+                            // RPC already includes location fees and taxes - use directly
+                            PriceCalculator.formatPriceAsInt(service.displayOfferPrice!),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
@@ -271,11 +261,8 @@ class PopularNearbySection extends ConsumerWidget {
                                   service.displayOfferPrice!) ...[
                             const SizedBox(width: 8),
                             Text(
-                              PriceCalculator.formatPriceAsInt(
-                                PriceCalculator.calculateTotalPriceWithTaxes(
-                                  service.displayOriginalPrice!,
-                                ),
-                              ),
+                              // RPC already includes location fees and taxes - use directly
+                              PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!),
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500,
@@ -288,11 +275,8 @@ class PopularNearbySection extends ConsumerWidget {
                           ],
                         ] else if (service.displayOriginalPrice != null) ...[
                           Text(
-                            PriceCalculator.formatPriceAsInt(
-                              PriceCalculator.calculateTotalPriceWithTaxes(
-                                service.displayOriginalPrice!,
-                              ),
-                            ),
+                            // RPC already includes location fees and taxes - use directly
+                            PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,

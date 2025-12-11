@@ -92,7 +92,7 @@ Navigate to Success Screen
 ```dart
 onPaymentSuccess: (paymentTransactionId, razorpayPaymentId) async {
   // Payment succeeded! Now create the order
-  debugPrint('✅ [PAYMENT SUCCESS] Payment completed: $razorpayPaymentId');
+  //('✅ [PAYMENT SUCCESS] Payment completed: $razorpayPaymentId');
 
   try {
     final orderCreationNotifier = ref.read(orderCreationProvider.notifier);
@@ -112,7 +112,7 @@ onPaymentSuccess: (paymentTransactionId, razorpayPaymentId) async {
     }
   } catch (e) {
     // Payment succeeded but order creation failed - needs manual intervention
-    debugPrint('❌ [PAYMENT SUCCESS] Error creating order after payment: $e');
+    //('❌ [PAYMENT SUCCESS] Error creating order after payment: $e');
     // Show warning to user to contact support with payment ID
   }
 }
@@ -122,7 +122,7 @@ onPaymentSuccess: (paymentTransactionId, razorpayPaymentId) async {
 ```dart
 onPaymentFailure: (error) {
   // Payment failed - no order created
-  debugPrint('❌ [PAYMENT FAILURE] Payment failed: $error');
+  //('❌ [PAYMENT FAILURE] Payment failed: $error');
   if (mounted) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Payment failed: $error')),
@@ -157,7 +157,7 @@ onPaymentFailure: (error) {
 ### Case 1: Payment Success, Order Creation Fails
 ```dart
 catch (e) {
-  debugPrint('❌ [PAYMENT SUCCESS] Error creating order after payment: $e');
+  //('❌ [PAYMENT SUCCESS] Error creating order after payment: $e');
   // Payment succeeded but order creation failed
   // Show warning to contact support with payment ID
   ScaffoldMessenger.of(context).showSnackBar(

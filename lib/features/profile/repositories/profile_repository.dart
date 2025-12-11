@@ -129,7 +129,7 @@ class ProfileRepository {
 
       return UserProfileModel.fromJson(response);
     } catch (e) {
-      debugPrint('Error creating user profile: $e');
+      //('Error creating user profile: $e');
       throw Exception('Failed to create user profile: $e');
     }
   }
@@ -161,7 +161,7 @@ class ProfileRepository {
           .update(updateData)
           .eq('auth_user_id', userId);
     } catch (e) {
-      debugPrint('Error updating celebration preferences: $e');
+      //('Error updating celebration preferences: $e');
       throw Exception('Failed to update celebration preferences: $e');
     }
   }
@@ -186,9 +186,9 @@ class ProfileRepository {
             ...updateData,
           }, onConflict: 'auth_user_id');
       
-      debugPrint('FCM token updated successfully for user: $authUserId');
+      //('FCM token updated successfully for user: $authUserId');
     } catch (e) {
-      debugPrint('Error updating FCM token: $e');
+      //('Error updating FCM token: $e');
       throw Exception('Failed to update FCM token: $e');
     }
   }

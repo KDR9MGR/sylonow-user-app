@@ -140,8 +140,8 @@ final popularNearbyServicesProvider = FutureProvider.autoDispose<List<ServiceLis
   final userLon = selectedAddress?.longitude;
 
   // Log location change for debugging
-  debugPrint('📍 Popular Nearby Services: Fetching for location ($userLat, $userLon)');
-  debugPrint('📍 Selected address: ${selectedAddress?.address}');
+  //('📍 Popular Nearby Services: Fetching for location ($userLat, $userLon)');
+  //('📍 Selected address: ${selectedAddress?.address}');
 
   final services = await repository.getPopularNearbyServices(
     userLat: userLat,
@@ -149,7 +149,7 @@ final popularNearbyServicesProvider = FutureProvider.autoDispose<List<ServiceLis
     radiusKm: 20.0, // 20km radius
   );
 
-  debugPrint('📍 Found ${services.length} services for location');
+  //('📍 Found ${services.length} services for location');
   return services;
 });
 

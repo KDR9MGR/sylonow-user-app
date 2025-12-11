@@ -73,7 +73,10 @@
       "Bash(git checkout:*)",
       "Bash(for line in 457 498 537 585 617 754 833 882 953 1015 1069)",
       "Bash(do echo \"=== Line $line ===\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(./gradlew signingReport:*)",
+      "Bash(./gradlew app:dependencies:*)",
+      "Bash(/mnt/e/flutter/bin/flutter format:*)"
     ],
     "deny": []
   },

@@ -60,11 +60,11 @@ class LogoutTestService {
       testResults['user_id_key'] = prefs.getString('userId');
       testResults['user_phone_key'] = prefs.getString('userPhone');
       
-      debugPrint('Logout test results: $testResults');
+      //('Logout test results: $testResults');
       
     } catch (e) {
       testResults['error'] = e.toString();
-      debugPrint('Error during logout test: $e');
+      //('Error during logout test: $e');
     }
     
     return testResults;
@@ -73,28 +73,28 @@ class LogoutTestService {
   static Future<void> printLogoutState() async {
     final results = await testLogoutState();
     
-    debugPrint('=== LOGOUT STATE TEST RESULTS ===');
-    debugPrint('Supabase Session Cleared: ${results['supabase_session_cleared']}');
-    debugPrint('Supabase User Cleared: ${results['supabase_user_cleared']}');
-    debugPrint('Auth Keys Cleared: ${results['auth_keys_cleared']}');
-    debugPrint('App Data Keys Cleared: ${results['app_data_keys_cleared']}');
-    debugPrint('Cache Cleared: ${results['cache_cleared']}');
-    debugPrint('Logout Successful: ${results['logout_successful']}');
+    //('=== LOGOUT STATE TEST RESULTS ===');
+    //('Supabase Session Cleared: ${results['supabase_session_cleared']}');
+    //('Supabase User Cleared: ${results['supabase_user_cleared']}');
+    //('Auth Keys Cleared: ${results['auth_keys_cleared']}');
+    //('App Data Keys Cleared: ${results['app_data_keys_cleared']}');
+    //('Cache Cleared: ${results['cache_cleared']}');
+    //('Logout Successful: ${results['logout_successful']}');
     
     if (results['remaining_auth_keys'] != null && 
         (results['remaining_auth_keys'] as List).isNotEmpty) {
-      debugPrint('Remaining Auth Keys: ${results['remaining_auth_keys']}');
+      //('Remaining Auth Keys: ${results['remaining_auth_keys']}');
     }
     
     if (results['remaining_app_data_keys'] != null && 
         (results['remaining_app_data_keys'] as List).isNotEmpty) {
-      debugPrint('Remaining App Data Keys: ${results['remaining_app_data_keys']}');
+      //('Remaining App Data Keys: ${results['remaining_app_data_keys']}');
     }
     
     if (results['error'] != null) {
-      debugPrint('Error: ${results['error']}');
+      //('Error: ${results['error']}');
     }
     
-    debugPrint('=== END LOGOUT STATE TEST ===');
+    //('=== END LOGOUT STATE TEST ===');
   }
 }

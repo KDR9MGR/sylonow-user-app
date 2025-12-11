@@ -63,7 +63,7 @@ class ImageUploadService {
       );
       return image;
     } catch (e) {
-      debugPrint('❌ Error picking image: $e');
+      //('❌ Error picking image: $e');
       return null;
     }
   }
@@ -75,14 +75,14 @@ class ImageUploadService {
     String? orderId,
   }) async {
     try {
-      debugPrint('🔄 Starting image upload...');
+      //('🔄 Starting image upload...');
       
       // Generate unique filename
       final String fileName = 
           '${orderId ?? _uuid.v4()}_${DateTime.now().millisecondsSinceEpoch}.jpg';
       final String filePath = '$userId/$fileName';
 
-      debugPrint('📁 Upload path: $filePath');
+      //('📁 Upload path: $filePath');
 
       // Read image bytes
       final Uint8List imageBytes = await imageFile.readAsBytes();
@@ -99,18 +99,18 @@ class ImageUploadService {
             ),
           );
 
-      debugPrint('✅ Image uploaded successfully: $uploadPath');
+      //('✅ Image uploaded successfully: $uploadPath');
 
       // Get public URL
       final String publicUrl = _supabase.storage
           .from('place-images')
           .getPublicUrl(filePath);
 
-      debugPrint('🔗 Public URL: $publicUrl');
+      //('🔗 Public URL: $publicUrl');
       return publicUrl;
 
     } catch (e) {
-      debugPrint('❌ Error uploading image: $e');
+      //('❌ Error uploading image: $e');
       return null;
     }
   }
@@ -126,10 +126,10 @@ class ImageUploadService {
           .from('place-images')
           .remove([filePath]);
 
-      debugPrint('✅ Image deleted successfully: $filePath');
+      //('✅ Image deleted successfully: $filePath');
       return true;
     } catch (e) {
-      debugPrint('❌ Error deleting image: $e');
+      //('❌ Error deleting image: $e');
       return false;
     }
   }
@@ -141,7 +141,7 @@ class ImageUploadService {
       // In a production app, you might want to use image compression libraries
       return imageFile;
     } catch (e) {
-      debugPrint('❌ Error compressing image: $e');
+      //('❌ Error compressing image: $e');
       return null;
     }
   }

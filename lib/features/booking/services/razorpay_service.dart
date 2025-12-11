@@ -69,8 +69,8 @@ class RazorpayService {
       final timestamp = DateTime.now().millisecondsSinceEpoch;
       final receiptId = 'P_$timestamp'; // P for Payment-first
 
-      debugPrint('📝 [RAZORPAY] Creating Razorpay order for amount: $amount INR');
-      debugPrint('📝 [RAZORPAY] Payment transaction ID: ${paymentTransaction.id}');
+      //('📝 [RAZORPAY] Creating Razorpay order for amount: $amount INR');
+      //('📝 [RAZORPAY] Payment transaction ID: ${paymentTransaction.id}');
 
       final razorpayOrderId = await _createRazorpayOrder(
         amount: amount,
@@ -85,7 +85,7 @@ class RazorpayService {
       );
 
       if (razorpayOrderId == null) {
-        debugPrint('❌ [RAZORPAY] Failed to create Razorpay order');
+        //('❌ [RAZORPAY] Failed to create Razorpay order');
         await _paymentRepository.updatePaymentStatus(
           paymentId: paymentTransaction.id,
           status: 'failed',
@@ -95,7 +95,7 @@ class RazorpayService {
         return RazorpayPaymentResult.error('Failed to create payment order');
       }
 
-      debugPrint('✅ [RAZORPAY] Razorpay order created successfully: $razorpayOrderId');
+      //('✅ [RAZORPAY] Razorpay order created successfully: $razorpayOrderId');
 
       // Update payment transaction with order ID
       await _paymentRepository.updatePaymentStatus(
@@ -131,32 +131,32 @@ class RazorpayService {
       // Set up callbacks for this specific payment
       _setupPaymentCallbacksWithOrderCreation(paymentTransaction.id);
 
-      debugPrint('🚀 [RAZORPAY] Opening Razorpay checkout with options: ${options.keys}');
-      debugPrint('🚀 [RAZORPAY] Payment amount: ${options['amount']} paise');
-      debugPrint('🚀 [RAZORPAY] Order ID: ${options['order_id']}');
-      debugPrint('🚀 [RAZORPAY] Razorpay instance hashCode: ${_razorpay.hashCode}');
+      //('🚀 [RAZORPAY] Opening Razorpay checkout with options: ${options.keys}');
+      //('🚀 [RAZORPAY] Payment amount: ${options['amount']} paise');
+      //('🚀 [RAZORPAY] Order ID: ${options['order_id']}');
+      //('🚀 [RAZORPAY] Razorpay instance hashCode: ${_razorpay.hashCode}');
       final prefillData = options['prefill'] as Map<String, dynamic>?;
-      debugPrint('🚀 [RAZORPAY] Prefill contact: ${prefillData?['contact']}');
-      debugPrint('🚀 [RAZORPAY] Prefill email: ${prefillData?['email']}');
-      debugPrint('🚀 [RAZORPAY] Prefill name: ${prefillData?['name']}');
+      //('🚀 [RAZORPAY] Prefill contact: ${prefillData?['contact']}');
+      //('🚀 [RAZORPAY] Prefill email: ${prefillData?['email']}');
+      //('🚀 [RAZORPAY] Prefill name: ${prefillData?['name']}');
 
       // Add a small delay to ensure database transaction is committed
       await Future.delayed(const Duration(milliseconds: 300));
 
       // Open Razorpay checkout
       try {
-        debugPrint('🔧 [RAZORPAY] Calling _razorpay.open() with options...');
-        debugPrint('🔧 [RAZORPAY] Options map: $options');
+        //('🔧 [RAZORPAY] Calling _razorpay.open() with options...');
+        //('🔧 [RAZORPAY] Options map: $options');
         _razorpay.open(options);
-        debugPrint('✅ [RAZORPAY] Razorpay.open() called successfully');
-        debugPrint('⏳ [RAZORPAY] Waiting for payment UI to appear...');
-        debugPrint('⏳ [RAZORPAY] If UI does not appear, check:');
-        debugPrint('   1. App is in foreground');
-        debugPrint('   2. CheckoutActivity is declared in AndroidManifest.xml');
-        debugPrint('   3. Full app rebuild was done (not hot reload)');
+        //('✅ [RAZORPAY] Razorpay.open() called successfully');
+        //('⏳ [RAZORPAY] Waiting for payment UI to appear...');
+        //('⏳ [RAZORPAY] If UI does not appear, check:');
+        //('   1. App is in foreground');
+        //('   2. CheckoutActivity is declared in AndroidManifest.xml');
+        //('   3. Full app rebuild was done (not hot reload)');
       } catch (e, stackTrace) {
-        debugPrint('❌ [RAZORPAY] Error calling _razorpay.open(): $e');
-        debugPrint('❌ [RAZORPAY] Stack trace: $stackTrace');
+        //('❌ [RAZORPAY] Error calling _razorpay.open(): $e');
+        //('❌ [RAZORPAY] Stack trace: $stackTrace');
 
         await _paymentRepository.updatePaymentStatus(
           paymentId: paymentTransaction.id,
@@ -172,7 +172,7 @@ class RazorpayService {
         razorpayOrderId,
       );
     } catch (e) {
-      debugPrint('Error processing Razorpay payment: $e');
+      //('Error processing Razorpay payment: $e');
       _onPaymentFailed?.call('Failed to process payment: ${e.toString()}');
       return RazorpayPaymentResult.error(
         'Failed to process payment: ${e.toString()}',
@@ -282,7 +282,7 @@ class RazorpayService {
         razorpayOrderId,
       );
     } catch (e) {
-      debugPrint('Error processing Razorpay payment: $e');
+      //('Error processing Razorpay payment: $e');
       return RazorpayPaymentResult.error(
         'Failed to process payment: ${e.toString()}',
       );
@@ -322,15 +322,15 @@ class RazorpayService {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final orderId = data['id'] as String;
-        debugPrint('✅ Razorpay order created: $orderId');
+        //('✅ Razorpay order created: $orderId');
         return orderId;
       } else {
-        debugPrint('❌ Razorpay order creation failed: ${response.statusCode}');
-        debugPrint('Response: ${response.body}');
+        //('❌ Razorpay order creation failed: ${response.statusCode}');
+        //('Response: ${response.body}');
         return null;
       }
     } catch (e) {
-      debugPrint('❌ Error creating Razorpay order: $e');
+      //('❌ Error creating Razorpay order: $e');
       return null;
     }
   }
@@ -415,16 +415,12 @@ class RazorpayService {
           paymentStatus: 'advance_paid',
         );
       } else if (updatedPayment.bookingId != null) {
-        // For theater bookings, update the bookings table
-        // TODO: Implement booking payment update if needed
-        debugPrint(
-          'Theater booking payment completed: ${updatedPayment.bookingId}',
-        );
+      
       }
 
-      debugPrint('Razorpay payment successful: ${response.paymentId}');
+      //('Razorpay payment successful: ${response.paymentId}');
     } catch (e) {
-      debugPrint('Error handling payment success: $e');
+      //('Error handling payment success: $e');
       await _paymentRepository.updatePaymentStatus(
         paymentId: paymentTransactionId,
         status: 'failed',
@@ -445,11 +441,9 @@ class RazorpayService {
         failureReason: '${response.code}: ${response.message}',
       );
 
-      debugPrint(
-        'Razorpay payment failed: ${response.code} - ${response.message}',
-      );
+    
     } catch (e) {
-      debugPrint('Error handling payment failure: $e');
+     
     }
   }
 
@@ -466,11 +460,9 @@ class RazorpayService {
             'Payment redirected to external wallet: ${response.walletName}',
       );
 
-      debugPrint(
-        'Payment redirected to external wallet: ${response.walletName}',
-      );
+      
     } catch (e) {
-      debugPrint('Error handling external wallet: $e');
+      //('Error handling external wallet: $e');
     }
   }
 
@@ -506,15 +498,15 @@ class RazorpayService {
         processedAt: DateTime.now(),
       );
 
-      debugPrint('✅ Razorpay payment successful: ${response.paymentId}');
-      debugPrint('✅ Now triggering order creation callback...');
+      //('✅ Razorpay payment successful: ${response.paymentId}');
+      //('✅ Now triggering order creation callback...');
 
       // Trigger the order creation callback
       if (_onOrderCreation != null) {
         await _onOrderCreation!(paymentTransactionId, response.paymentId ?? '');
       }
     } catch (e) {
-      debugPrint('❌ Error handling payment success: $e');
+      //('❌ Error handling payment success: $e');
       await _paymentRepository.updatePaymentStatus(
         paymentId: paymentTransactionId,
         status: 'failed',
@@ -536,14 +528,12 @@ class RazorpayService {
         failureReason: '${response.code}: ${response.message}',
       );
 
-      debugPrint(
-        '❌ Razorpay payment failed: ${response.code} - ${response.message}',
-      );
+     
 
       // Trigger the failure callback
       _onPaymentFailed?.call('${response.code}: ${response.message}');
     } catch (e) {
-      debugPrint('Error handling payment failure: $e');
+      //('Error handling payment failure: $e');
       _onPaymentFailed?.call('Payment failed: ${e.toString()}');
     }
   }
@@ -565,7 +555,7 @@ class RazorpayService {
 
       return generatedSignature == signature;
     } catch (e) {
-      debugPrint('Error verifying payment signature: $e');
+      //('Error verifying payment signature: $e');
       return false;
     }
   }
@@ -575,7 +565,7 @@ class RazorpayService {
     try {
       return await _paymentRepository.getPaymentById(paymentTransactionId);
     } catch (e) {
-      debugPrint('Error getting payment status: $e');
+      //('Error getting payment status: $e');
       return null;
     }
   }
@@ -601,7 +591,7 @@ class RazorpayService {
 
       return RefundResult.success(refundId);
     } catch (e) {
-      debugPrint('Error processing refund: $e');
+      //('Error processing refund: $e');
       return RefundResult.error('Failed to process refund: ${e.toString()}');
     }
   }

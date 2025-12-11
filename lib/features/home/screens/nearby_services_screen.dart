@@ -43,7 +43,7 @@ class _NearbyServicesScreenState extends ConsumerState<NearbyServicesScreen> {
         },
         loading: () => _buildLoadingGrid(),
         error: (error, stack) {
-          debugPrint('Error loading nearby services: $error');
+          //('Error loading nearby services: $error');
           return _buildErrorState();
         },
       ),
@@ -99,18 +99,11 @@ class _NearbyServicesScreenState extends ConsumerState<NearbyServicesScreen> {
             '/service/${service.id}',
             extra: {
               'serviceName': service.name,
+              // RPC already includes location fees, convenience fee, and taxes - use directly
               'price': service.displayOfferPrice != null
-                  ? PriceCalculator.formatPriceAsInt(
-                      PriceCalculator.calculateTotalPriceWithTaxes(
-                        service.displayOfferPrice!,
-                      ),
-                    )
+                  ? PriceCalculator.formatPriceAsInt(service.displayOfferPrice!)
                   : service.displayOriginalPrice != null
-                  ? PriceCalculator.formatPriceAsInt(
-                      PriceCalculator.calculateTotalPriceWithTaxes(
-                        service.displayOriginalPrice!,
-                      ),
-                    )
+                  ? PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!)
                   : null,
               'rating': (service.rating ?? 4.9).toStringAsFixed(1),
               'reviewCount': service.reviewsCount ?? 102,
@@ -266,13 +259,9 @@ class _NearbyServicesScreenState extends ConsumerState<NearbyServicesScreen> {
                       if (service.displayOfferPrice != null) ...[
                         Row(
                           children: [
-                            // Offer Price with taxes
+                            // Offer Price - RPC already includes all fees and taxes
                             Text(
-                              PriceCalculator.formatPriceAsInt(
-                                PriceCalculator.calculateTotalPriceWithTaxes(
-                                  service.displayOfferPrice!,
-                                ),
-                              ),
+                              PriceCalculator.formatPriceAsInt(service.displayOfferPrice!),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -281,14 +270,10 @@ class _NearbyServicesScreenState extends ConsumerState<NearbyServicesScreen> {
                               ),
                             ),
                             const SizedBox(width: 6),
-                            // Original Price (struck through) with taxes
+                            // Original Price (struck through) - RPC already includes all fees and taxes
                             if (service.displayOriginalPrice != null)
                               Text(
-                                PriceCalculator.formatPriceAsInt(
-                                  PriceCalculator.calculateTotalPriceWithTaxes(
-                                    service.displayOriginalPrice!,
-                                  ),
-                                ),
+                                PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!),
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w400,
@@ -302,11 +287,7 @@ class _NearbyServicesScreenState extends ConsumerState<NearbyServicesScreen> {
                         ),
                       ] else if (service.displayOriginalPrice != null) ...[
                         Text(
-                          PriceCalculator.formatPriceAsInt(
-                            PriceCalculator.calculateTotalPriceWithTaxes(
-                              service.displayOriginalPrice!,
-                            ),
-                          ),
+                          PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

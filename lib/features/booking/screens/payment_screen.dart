@@ -658,7 +658,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           },
           loading: () {
             // Payment in progress - show loading if needed
-            debugPrint('Payment processing...');
+            //('Payment processing...');
           },
           error: (error, stackTrace) {
             // Payment error
@@ -670,7 +670,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   }
 
   Future<void> _handlePaymentSuccess(OrderModel order) async {
-    debugPrint('🎉 Payment successful! Processing place image upload...');
+    //('🎉 Payment successful! Processing place image upload...');
     
     try {
       String? placeImageUrl;
@@ -678,7 +678,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       // Check if there's a place image to upload
       final placeImageData = widget.bookingData['placeImage'];
       if (placeImageData != null && placeImageData is XFile) {
-        debugPrint('📸 Uploading place image after successful payment...');
+        //('📸 Uploading place image after successful payment...');
         
         final uploadService = ImageUploadService();
         final user = ref.read(currentUserProvider)!;
@@ -690,33 +690,33 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
         );
         
         if (placeImageUrl != null) {
-          debugPrint('✅ Place image uploaded: $placeImageUrl');
+          //('✅ Place image uploaded: $placeImageUrl');
           
           // Update the order with the place image URL
           await ref.read(orderRepositoryProvider).updateOrderPlaceImage(
             orderId: order.id,
             placeImageUrl: placeImageUrl,
           );
-          debugPrint('✅ Order updated with place image URL');
+          //('✅ Order updated with place image URL');
         } else {
-          debugPrint('❌ Failed to upload place image');
+          //('❌ Failed to upload place image');
         }
       } else {
-        debugPrint('ℹ️ No place image to upload');
+        //('ℹ️ No place image to upload');
       }
 
       // Navigate to success screen
       _navigateToSuccess(order.copyWith(placeImageUrl: placeImageUrl));
       
     } catch (e) {
-      debugPrint('❌ Error handling payment success: $e');
+      //('❌ Error handling payment success: $e');
       // Still navigate to success even if image upload fails
       _navigateToSuccess(order);
     }
   }
 
   void _handlePaymentFailure(String error) {
-    debugPrint('❌ Payment failed: $error');
+    //('❌ Payment failed: $error');
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Payment failed: $error'),

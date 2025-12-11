@@ -131,15 +131,58 @@ class AddonService {
     }
   }
 
-  /// Get addons by theater and category
-  Future<List<AddonModel>> getAddonsByTheaterAndCategory(String theaterId, String category) async {
+  /// Get addons by vendor and category
+  /// Filters addons by vendor_id (theater owner)
+  Future<List<AddonModel>> getAddonsByVendorAndCategory(
+    String vendorId,
+    String category,
+  ) async {
     try {
       final response = await _supabase
           .from('add_ons')
           .select('*')
-          .eq('theater_id', theaterId)
           .eq('category', category)
           .eq('is_active', true)
+          .eq('vendor_id', vendorId)
+          .order('price', ascending: true);
+
+      return response.map((addonData) {
+        return AddonModel.fromJson(addonData);
+      }).toList();
+    } catch (e) {
+      print('Error fetching addons by vendor and category: $e');
+      return [];
+    }
+  }
+
+  /// Get addons by theater and category
+  /// Includes both theater-specific addons (theater_id match) AND vendor-owned addons (vendor_id match)
+  Future<List<AddonModel>> getAddonsByTheaterAndCategory(
+    String theaterId,
+    String category,
+  ) async {
+    try {
+      // First get the theater's vendor/owner ID
+      final theaterResponse = await _supabase
+          .from('private_theaters')
+          .select('owner_id')
+          .eq('id', theaterId)
+          .single();
+
+      final vendorId = theaterResponse['owner_id'] as String?;
+
+      if (vendorId == null) {
+        print('No vendor ID found for theater: $theaterId');
+        return [];
+      }
+
+      // Fetch addons that match category AND (theater_id = theaterId OR vendor_id = vendorId)
+      final response = await _supabase
+          .from('add_ons')
+          .select('*')
+          .eq('category', category)
+          .eq('is_active', true)
+          .or('theater_id.eq.$theaterId,vendor_id.eq.$vendorId')
           .order('price', ascending: true);
 
       return response.map((addonData) {

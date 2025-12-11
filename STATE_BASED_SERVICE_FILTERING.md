@@ -143,7 +143,7 @@ Future<List<ServiceListingModel>> getPopularNearbyServices({
 
   // Filter by state if provided
   if (state != null && state.isNotEmpty) {
-    debugPrint('🔍 Filtering services by state: $state');
+    //('🔍 Filtering services by state: $state');
     // Use ilike to search for state in vendor's location->>'address'
     query = query.ilike('vendors.location->>address', '%$state%');
   }

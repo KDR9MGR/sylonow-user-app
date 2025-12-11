@@ -20,7 +20,7 @@ class WelcomePreferencesService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_hasShownWelcomeKey, true);
     await prefs.setString(_welcomeCompletionDateKey, DateTime.now().toIso8601String());
-    debugPrint('✅ Welcome overlay marked as completed at ${DateTime.now()}');
+    //('✅ Welcome overlay marked as completed at ${DateTime.now()}');
   }
 
   /// Save celebration date and time preferences
@@ -32,18 +32,18 @@ class WelcomePreferencesService {
 
     if (celebrationDate != null) {
       await prefs.setString(_celebrationDateKey, celebrationDate.toIso8601String());
-      debugPrint('✅ Celebration date saved: ${DateFormat('dd MMM yyyy').format(celebrationDate)}');
+      //('✅ Celebration date saved: ${DateFormat('dd MMM yyyy').format(celebrationDate)}');
     }
 
     if (celebrationTime != null) {
       final timeString = '${celebrationTime.hour}:${celebrationTime.minute}';
       await prefs.setString(_celebrationTimeKey, timeString);
-      debugPrint('✅ Celebration time saved: $timeString');
+      //('✅ Celebration time saved: $timeString');
     }
 
     // Force reload to ensure changes are committed and available immediately
     await prefs.reload();
-    debugPrint('🔄 SharedPreferences reloaded after save');
+    //('🔄 SharedPreferences reloaded after save');
   }
 
   /// Get saved celebration date
@@ -51,19 +51,19 @@ class WelcomePreferencesService {
     final prefs = await SharedPreferences.getInstance();
     // Reload to ensure we get the latest saved values
     await prefs.reload();
-    debugPrint('🔄 SharedPreferences reloaded before reading celebration date');
+    //('🔄 SharedPreferences reloaded before reading celebration date');
 
     final dateString = prefs.getString(_celebrationDateKey);
     if (dateString != null) {
       try {
-        debugPrint('📅 Retrieved celebration date string: $dateString');
+        //('📅 Retrieved celebration date string: $dateString');
         return DateTime.parse(dateString);
       } catch (e) {
-        debugPrint('Error parsing celebration date: $e');
+        //('Error parsing celebration date: $e');
         return null;
       }
     }
-    debugPrint('⚠️ No celebration date found in SharedPreferences');
+    //('⚠️ No celebration date found in SharedPreferences');
     return null;
   }
 
@@ -72,25 +72,25 @@ class WelcomePreferencesService {
     final prefs = await SharedPreferences.getInstance();
     // Reload to ensure we get the latest saved values
     await prefs.reload();
-    debugPrint('🔄 SharedPreferences reloaded before reading celebration time');
+    //('🔄 SharedPreferences reloaded before reading celebration time');
 
     final timeString = prefs.getString(_celebrationTimeKey);
     if (timeString != null) {
       try {
         final parts = timeString.split(':');
         if (parts.length == 2) {
-          debugPrint('⏰ Retrieved celebration time string: $timeString');
+          //('⏰ Retrieved celebration time string: $timeString');
           return TimeOfDay(
             hour: int.parse(parts[0]),
             minute: int.parse(parts[1]),
           );
         }
       } catch (e) {
-        debugPrint('Error parsing celebration time: $e');
+        //('Error parsing celebration time: $e');
         return null;
       }
     }
-    debugPrint('⚠️ No celebration time found in SharedPreferences');
+    //('⚠️ No celebration time found in SharedPreferences');
     return null;
   }
 
@@ -102,7 +102,7 @@ class WelcomePreferencesService {
       try {
         return DateTime.parse(dateString);
       } catch (e) {
-        debugPrint('Error parsing welcome completion date: $e');
+        //('Error parsing welcome completion date: $e');
         return null;
       }
     }
@@ -136,7 +136,7 @@ class WelcomePreferencesService {
     await prefs.remove(_celebrationDateKey);
     await prefs.remove(_celebrationTimeKey);
     await prefs.remove(_welcomeCompletionDateKey);
-    debugPrint('🧹 All welcome preferences cleared');
+    //('🧹 All welcome preferences cleared');
   }
 
   /// Check if celebration preferences are set

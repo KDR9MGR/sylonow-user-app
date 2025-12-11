@@ -50,7 +50,7 @@ class _BookingDetailsScreenState extends ConsumerState<BookingDetailsScreen> {
         });
       }
     } catch (e) {
-      debugPrint('Error loading user profile: $e');
+      //('Error loading user profile: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -602,10 +602,10 @@ class _BookingDetailsScreenState extends ConsumerState<BookingDetailsScreen> {
           : null,
     };
 
-    debugPrint('✅ Navigating to checkout with booking details:');
-    debugPrint('  - Customer Name: ${customerNameController.text.trim()}');
-    debugPrint('  - Customer Age: ${customerAgeController.text.trim().isNotEmpty ? customerAgeController.text.trim() : "Not provided"}');
-    debugPrint('  - Occasion: ${occasionController.text.trim().isNotEmpty ? occasionController.text.trim() : "Not provided"}');
+    //('✅ Navigating to checkout with booking details:');
+    //('  - Customer Name: ${customerNameController.text.trim()}');
+    //('  - Customer Age: ${customerAgeController.text.trim().isNotEmpty ? customerAgeController.text.trim() : "Not provided"}');
+    //('  - Occasion: ${occasionController.text.trim().isNotEmpty ? occasionController.text.trim() : "Not provided"}');
 
     try {
       // Navigate to checkout
@@ -622,7 +622,7 @@ class _BookingDetailsScreenState extends ConsumerState<BookingDetailsScreen> {
         },
       );
     } catch (e) {
-      debugPrint('❌ Navigation error: $e');
+      //('❌ Navigation error: $e');
       _showError('Unable to proceed to checkout. Please try again.');
     }
   }

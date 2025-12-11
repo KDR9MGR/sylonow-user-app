@@ -90,7 +90,7 @@ Google Play rejects apps with SMS permissions in the manifest unless the app is 
 ### 5. **Debug Logging Wrapped** (Production Best Practice)
 
 **What was fixed:**
-- Wrapped all `debugPrint` statements in `kDebugMode` checks
+- Wrapped all `//` statements in `kDebugMode` checks
 - Debug logs will not appear in production builds
 
 **Files modified:**

@@ -88,7 +88,7 @@ class _TheaterListScreenState extends ConsumerState<TheaterListScreen> {
         }
       }
     } catch (e) {
-      debugPrint('Error loading celebration date: $e');
+      //('Error loading celebration date: $e');
       if (mounted) {
         setState(() {
           _isLoadingCelebrationDate = false;

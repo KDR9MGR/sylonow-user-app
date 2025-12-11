@@ -138,7 +138,7 @@ class OptimizedFeaturedServicesNotifier extends StateNotifier<OptimizedFeaturedS
     } catch (e) {
       state = state.copyWith(isLoading: false);
       // Log error but don't throw to prevent UI crashes
-      debugPrint('Failed to load featured services: $e');
+      //('Failed to load featured services: $e');
     }
   }
 
@@ -194,7 +194,7 @@ final appInitializationProvider = FutureProvider<bool>((ref) async {
     
     return true;
   } catch (e) {
-    debugPrint('App initialization error: $e');
+    //('App initialization error: $e');
     return false;
   }
 });
@@ -214,14 +214,14 @@ class PerformanceMonitor {
   void endTimer(String name) {
     if (_timers.containsKey(name)) {
       final duration = DateTime.now().difference(_timers[name]!);
-      debugPrint('Performance: $name took ${duration.inMilliseconds}ms');
+      //('Performance: $name took ${duration.inMilliseconds}ms');
       _timers.remove(name);
     }
   }
 
   void logMemoryUsage() {
     // Can be extended with more detailed memory monitoring
-    debugPrint('Performance: Memory monitoring active');
+    //('Performance: Memory monitoring active');
   }
 }
 

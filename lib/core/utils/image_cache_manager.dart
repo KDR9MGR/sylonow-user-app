@@ -26,7 +26,7 @@ class AppImageCacheManager {
       try {
         await precacheImage(AssetImage(imagePath), context);
       } catch (e) {
-        debugPrint('Failed to preload image: $imagePath - $e');
+        //('Failed to preload image: $imagePath - $e');
       }
     }
   }
@@ -83,7 +83,7 @@ class AppImageCacheManager {
   /// Get cache size info
   static Future<void> printCacheInfo() async {
     final files = await instance.getFileFromCache('');
-    debugPrint('Image cache info: ${files?.file.lengthSync()} bytes');
+    //('Image cache info: ${files?.file.lengthSync()} bytes');
   }
 }
 
@@ -115,7 +115,7 @@ class OptimizedAssetImage extends StatelessWidget {
       // Use lower quality for better performance
       filterQuality: FilterQuality.low,
       errorBuilder: (context, error, stackTrace) {
-        debugPrint('Failed to load asset image: $assetPath - $error');
+        //('Failed to load asset image: $assetPath - $error');
         return Container(
           width: width,
           height: height,

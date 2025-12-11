@@ -4,16 +4,16 @@ class Logger {
   static void info(String message, {String? tag}) {
     if (kDebugMode) {
       final logMessage = tag != null ? '[$tag] $message' : message;
-      debugPrint('ℹ️ $logMessage');
+      //('ℹ️ $logMessage');
     }
   }
 
   static void error(String message, {String? tag, Object? error}) {
     if (kDebugMode) {
       final logMessage = tag != null ? '[$tag] $message' : message;
-      debugPrint('❌ $logMessage');
+      //('❌ $logMessage');
       if (error != null) {
-        debugPrint('Error details: $error');
+        //('Error details: $error');
       }
     }
   }
@@ -21,21 +21,21 @@ class Logger {
   static void warning(String message, {String? tag}) {
     if (kDebugMode) {
       final logMessage = tag != null ? '[$tag] $message' : message;
-      debugPrint('⚠️ $logMessage');
+      //('⚠️ $logMessage');
     }
   }
 
   static void debug(String message, {String? tag}) {
     if (kDebugMode) {
       final logMessage = tag != null ? '[$tag] $message' : message;
-      debugPrint('🔍 $logMessage');
+      //('🔍 $logMessage');
     }
   }
 
   static void success(String message, {String? tag}) {
     if (kDebugMode) {
       final logMessage = tag != null ? '[$tag] $message' : message;
-      debugPrint('✅ $logMessage');
+      //('✅ $logMessage');
     }
   }
 }

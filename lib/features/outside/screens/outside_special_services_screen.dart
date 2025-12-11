@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:sylonow_user/core/theme/app_theme.dart';
 import 'package:sylonow_user/features/outside/models/addon_model.dart';
-import 'package:sylonow_user/features/outside/providers/outside_providers.dart';
+import 'package:sylonow_user/features/outside/providers/theater_screen_detail_providers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class OutsideSpecialServicesScreen extends ConsumerStatefulWidget {
@@ -30,7 +30,17 @@ class _OutsideSpecialServicesScreenState extends ConsumerState<OutsideSpecialSer
 
   @override
   Widget build(BuildContext context) {
-    final addOnsAsync = ref.watch(addOnsProvider);
+    // Get theater information from selectionData to filter add-ons by theater
+    final screen = widget.selectionData['screen'];
+    final theaterId = screen != null ? screen.theaterId : null;
+
+    // Fetch special service add-ons by theater and category 'special service'
+    final addOnsAsync = theaterId != null
+        ? ref.watch(addonsByCategoryProvider(AddonCategoryParams(
+            theaterId: theaterId,
+            category: 'special service',
+          )))
+        : const AsyncValue<List<AddonModel>>.data([]);
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -106,12 +116,8 @@ class _OutsideSpecialServicesScreenState extends ConsumerState<OutsideSpecialSer
           Expanded(
             child: addOnsAsync.when(
               data: (addOns) {
-                // Filter add-ons by special service categories
-                final specialServices = addOns.where((addon) =>
-                  addon.isActive &&
-                  (addon.category == 'special_service' ||
-                   addon.category == 'extra_special_service')
-                ).toList();
+                // Add-ons are already filtered by category 'special service' from provider
+                final specialServices = addOns;
                 
                 if (specialServices.isEmpty) {
                   return const Center(

@@ -36,14 +36,14 @@ class AuthService {
       final isAvailable = await SignInWithApple.isAvailable();
 
       if (kDebugMode && !isAvailable) {
-        debugPrint('🍎 Sign in with Apple is not available on this device');
-        debugPrint('🍎 Note: Apple Sign In only works on real iOS devices, not simulators');
+        //('🍎 Sign in with Apple is not available on this device');
+        //('🍎 Note: Apple Sign In only works on real iOS devices, not simulators');
       }
 
       return isAvailable;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('🍎 Error checking Apple Sign In availability: $e');
+        //('🍎 Error checking Apple Sign In availability: $e');
       }
       return false;
     }
@@ -63,7 +63,7 @@ class AuthService {
       );
       return response;
     } catch (e) {
-      debugPrint('Sign up error: $e');
+      //('Sign up error: $e');
       rethrow;
     }
   }
@@ -88,7 +88,7 @@ class AuthService {
       
       return response;
     } catch (e) {
-      debugPrint('Sign in error: $e');
+      //('Sign in error: $e');
       rethrow;
     }
   }
@@ -105,9 +105,9 @@ class AuthService {
       // Clear all local data
       await _clearAllLocalData();
       
-      debugPrint('Successfully signed out');
+      //('Successfully signed out');
     } catch (e) {
-      debugPrint('Sign out error: $e');
+      //('Sign out error: $e');
       rethrow;
     }
   }
@@ -139,9 +139,9 @@ class AuthService {
       // Clear cached images
       await _clearImageCache();
       
-      debugPrint('All local data cleared');
+      //('All local data cleared');
     } catch (e) {
-      debugPrint('Error clearing local data: $e');
+      //('Error clearing local data: $e');
       rethrow;
     }
   }
@@ -152,9 +152,9 @@ class AuthService {
       // Clear cached network images
       await CachedNetworkImage.evictFromCache('');
       await DefaultCacheManager().emptyCache();
-      debugPrint('Image cache cleared');
+      //('Image cache cleared');
     } catch (e) {
-      debugPrint('Error clearing image cache: $e');
+      //('Error clearing image cache: $e');
       // Don't rethrow here as this is not critical
     }
   }
@@ -169,7 +169,7 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(AppConstants.userPhoneKey, phoneNumber);
     } catch (e) {
-      debugPrint('Send OTP error: $e');
+      //('Send OTP error: $e');
       rethrow;
     }
   }
@@ -195,7 +195,7 @@ class AuthService {
       
       return response;
     } catch (e) {
-      debugPrint('Verify OTP error: $e');
+      //('Verify OTP error: $e');
       rethrow;
     }
   }
@@ -221,7 +221,7 @@ class AuthService {
       
       return hasValidSession;
     } catch (e) {
-      debugPrint('Authentication check error: $e');
+      //('Authentication check error: $e');
       return false;
     }
   }
@@ -241,7 +241,7 @@ class AuthService {
       
       // If the user cancelled the sign-in, return null.
       if (googleUser == null) {
-        debugPrint('🔵 Google Sign-In was cancelled by the user.');
+        //('🔵 Google Sign-In was cancelled by the user.');
         return null;
       }
 
@@ -273,7 +273,7 @@ class AuthService {
 
       return authResponse;
     } catch (e) {
-      debugPrint('Google sign in error: $e');
+      //('Google sign in error: $e');
       rethrow;
     }
   }
@@ -284,7 +284,7 @@ class AuthService {
       await _googleSignIn.signOut();
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('Google sign out error: $e');
+        //('Google sign out error: $e');
       }
     }
   }
@@ -300,7 +300,7 @@ class AuthService {
       }
 
       if (kDebugMode) {
-        debugPrint('🍎 Starting Apple Sign In process...');
+        //('🍎 Starting Apple Sign In process...');
       }
 
       // Generate a random nonce for security
@@ -308,7 +308,7 @@ class AuthService {
       final hashedNonce = _sha256ofString(rawNonce);
 
       if (kDebugMode) {
-        debugPrint('🍎 Generated nonce for security');
+        //('🍎 Generated nonce for security');
       }
 
       // Determine clientId based on platform
@@ -317,7 +317,7 @@ class AuthService {
       final clientId = kIsWeb ? 'com.sylonowusr' : 'com.sylonowusr.app';
 
       if (kDebugMode) {
-        debugPrint('🍎 Using clientId: $clientId');
+        //('🍎 Using clientId: $clientId');
       }
 
       // Request credential from Apple
@@ -336,10 +336,10 @@ class AuthService {
       );
 
       if (kDebugMode) {
-        debugPrint('🍎 Received credential from Apple');
-        debugPrint('🍎 User ID: ${credential.userIdentifier}');
-        debugPrint('🍎 Email: ${credential.email}');
-        debugPrint('🍎 Identity Token available: ${credential.identityToken != null}');
+        //('🍎 Received credential from Apple');
+        //('🍎 User ID: ${credential.userIdentifier}');
+        //('🍎 Email: ${credential.email}');
+        //('🍎 Identity Token available: ${credential.identityToken != null}');
       }
 
       // Check if we got the identity token
@@ -359,8 +359,8 @@ class AuthService {
       );
 
       if (kDebugMode) {
-        debugPrint('🍎 Successfully signed in to Supabase');
-        debugPrint('🍎 User ID: ${authResponse.user?.id}');
+        //('🍎 Successfully signed in to Supabase');
+        //('🍎 User ID: ${authResponse.user?.id}');
       }
 
       // Create user profile after successful Apple sign-in
@@ -377,15 +377,15 @@ class AuthService {
       return authResponse;
     } on SignInWithAppleAuthorizationException catch (e) {
       if (kDebugMode) {
-        debugPrint('🍎 Apple Sign In Authorization Error: ${e.code}');
-        debugPrint('🍎 Error message: ${e.message}');
+        //('🍎 Apple Sign In Authorization Error: ${e.code}');
+        //('🍎 Error message: ${e.message}');
       }
 
       // Handle specific error codes
       switch (e.code) {
         case AuthorizationErrorCode.canceled:
           if (kDebugMode) {
-            debugPrint('🍎 User canceled Apple Sign In');
+            //('🍎 User canceled Apple Sign In');
           }
           return null;
         case AuthorizationErrorCode.failed:
@@ -405,8 +405,8 @@ class AuthService {
       }
     } on AuthApiException catch (e) {
       if (kDebugMode) {
-        debugPrint('🍎 Supabase Auth API Error: ${e.statusCode}');
-        debugPrint('🍎 Error message: ${e.message}');
+        //('🍎 Supabase Auth API Error: ${e.statusCode}');
+        //('🍎 Error message: ${e.message}');
       }
 
       // Handle audience mismatch error
@@ -419,7 +419,7 @@ class AuthService {
       rethrow;
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('🍎 Apple sign in error: $e');
+        //('🍎 Apple sign in error: $e');
       }
       rethrow;
     }
@@ -445,11 +445,11 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('appleSignInNonce', nonce);
       if (kDebugMode) {
-        debugPrint('🍎 Nonce stored securely');
+        //('🍎 Nonce stored securely');
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('🍎 Failed to store nonce: $e');
+        //('🍎 Failed to store nonce: $e');
       }
       // Non-critical, don't throw
     }
@@ -471,9 +471,9 @@ class AuthService {
             .eq('auth_user_id', userId);
       }
       
-      debugPrint('🟢 User profile created with app type: $appType');
+      //('🟢 User profile created with app type: $appType');
     } catch (e) {
-      debugPrint('🔴 Failed to create user profile: $e');
+      //('🔴 Failed to create user profile: $e');
       // Don't throw - this is not critical for auth flow
     }
   }
@@ -489,7 +489,7 @@ class AuthService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(AppConstants.userPhoneKey, phoneNumber);
     } catch (e) {
-      debugPrint('Phone sign in error: $e');
+      //('Phone sign in error: $e');
       rethrow;
     }
   }
@@ -518,7 +518,7 @@ class AuthService {
       
       return response;
     } catch (e) {
-      debugPrint('Verify phone OTP error: $e');
+      //('Verify phone OTP error: $e');
       rethrow;
     }
   }
@@ -528,7 +528,7 @@ class AuthService {
     try {
       await _supabaseClient.auth.resetPasswordForEmail(email);
     } catch (e) {
-      debugPrint('Reset password error: $e');
+      //('Reset password error: $e');
       rethrow;
     }
   }
@@ -551,7 +551,7 @@ class AuthService {
       return fullName != null && fullName.trim().isNotEmpty &&
              gender != null && gender.trim().isNotEmpty;
     } catch (e) {
-      debugPrint('Profile check error: $e');
+      //('Profile check error: $e');
       // If profile doesn't exist or there's an error, assume it's incomplete
       return false;
     }
@@ -573,7 +573,7 @@ class AuthService {
       
       return isCompleted ?? false;
     } catch (e) {
-      debugPrint('Onboarding check error: $e');
+      //('Onboarding check error: $e');
       // If profile doesn't exist or there's an error, assume onboarding not completed
       return false;
     }
@@ -590,9 +590,9 @@ class AuthService {
           .update({'is_onboarding_completed': true})
           .eq('auth_user_id', user.id);
       
-      debugPrint('Onboarding completed for user: ${user.id}');
+      //('Onboarding completed for user: ${user.id}');
     } catch (e) {
-      debugPrint('Complete onboarding error: $e');
+      //('Complete onboarding error: $e');
       rethrow;
     }
   }
@@ -645,7 +645,7 @@ class AuthService {
             .eq('auth_user_id', user.id);
       }
     } catch (e) {
-      debugPrint('Save onboarding data error: $e');
+      //('Save onboarding data error: $e');
       rethrow;
     }
   }
@@ -664,7 +664,7 @@ class AuthService {
       
       return response;
     } catch (e) {
-      debugPrint('Get user profile error: $e');
+      //('Get user profile error: $e');
       return null;
     }
   }

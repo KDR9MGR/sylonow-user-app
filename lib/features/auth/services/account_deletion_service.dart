@@ -23,7 +23,7 @@ class AccountDeletionService {
       );
       return true;
     } catch (e) {
-      debugPrint('Error sending deletion OTP: $e');
+      //('Error sending deletion OTP: $e');
       rethrow;
     }
   }
@@ -50,7 +50,7 @@ class AccountDeletionService {
 
       return true;
     } catch (e) {
-      debugPrint('Error verifying OTP and deleting account: $e');
+      //('Error verifying OTP and deleting account: $e');
       rethrow;
     }
   }
@@ -103,9 +103,9 @@ class AccountDeletionService {
       // 8. Clear local data
       await _clearLocalData();
 
-      debugPrint('Account successfully deleted for user: $userId');
+      //('Account successfully deleted for user: $userId');
     } catch (e) {
-      debugPrint('Error deleting user account: $e');
+      //('Error deleting user account: $e');
       rethrow;
     }
   }
@@ -121,9 +121,9 @@ class AccountDeletionService {
       await CachedNetworkImage.evictFromCache('*');
       await DefaultCacheManager().emptyCache();
 
-      debugPrint('Local data cleared successfully');
+      //('Local data cleared successfully');
     } catch (e) {
-      debugPrint('Error clearing local data: $e');
+      //('Error clearing local data: $e');
       // Don't rethrow here as local data clearing is not critical
     }
   }

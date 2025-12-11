@@ -17,9 +17,9 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   if (kDebugMode) {
-    debugPrint('🔔 Background message received: ${message.messageId}');
-    debugPrint('🔔 Background message title: ${message.notification?.title}');
-    debugPrint('🔔 Background message body: ${message.notification?.body}');
+    //('🔔 Background message received: ${message.messageId}');
+    //('🔔 Background message title: ${message.notification?.title}');
+    //('🔔 Background message body: ${message.notification?.body}');
   }
 }
 
@@ -32,7 +32,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     if (kDebugMode) {
-      debugPrint('🔥 Firebase initialized successfully');
+      //('🔥 Firebase initialized successfully');
     }
 
     // Set up background message handler
@@ -44,12 +44,12 @@ void main() async {
       anonKey: AppConstants.supabaseAnonKey,
     );
     if (kDebugMode) {
-      debugPrint('🗄️ Supabase initialized successfully');
+      //('🗄️ Supabase initialized successfully');
     }
 
   } catch (e) {
     if (kDebugMode) {
-      debugPrint('❌ Error initializing services: $e');
+      //('❌ Error initializing services: $e');
     }
   }
   

@@ -154,7 +154,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     orElse: () => const SizedBox.shrink(),
                   ),
 
-                  // Order Summary
+                  // Order Summary (now includes selected add-ons)
                   _buildOrderSummary(),
                   const SizedBox(height: 100), // Space for bottom bar
                 ],
@@ -625,12 +625,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     return InkWell(
       onTap: () {
         setState(() {
+          final cakePriceWithTax = cake.price * 1.0354; // Add 3.54% tax
           if (isSelected) {
             _selectedCakes.remove(cake);
-            _totalCakePrice -= cake.price;
+            _totalCakePrice -= cakePriceWithTax;
           } else {
             _selectedCakes.add(cake);
-            _totalCakePrice += cake.price;
+            _totalCakePrice += cakePriceWithTax;
           }
         });
         // Recalculate advance payment when cakes change
@@ -713,7 +714,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        cake.formattedPrice,
+                        '₹${(cake.price * 1.0354).round()}',
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w700,
@@ -741,9 +742,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Widget _buildOrderSummary() {
     final basePrice = widget.timeSlot.basePrice;
-    final totalExtraPrice = widget.totalAddonPrice +
-                          widget.totalExtraSpecialPrice +
-                          widget.totalSpecialServicesPrice +
+
+    // Recalculate totals from selected items to ensure accuracy
+    final recalculatedAddonPrice = widget.selectedAddons.fold<double>(
+      0.0,
+      (sum, addon) => sum + (addon.price * 1.0354),
+    );
+    final recalculatedExtraSpecialPrice = widget.selectedExtraSpecials.fold<double>(
+      0.0,
+      (sum, addon) => sum + (addon.price * 1.0354),
+    );
+    final recalculatedSpecialServicesPrice = widget.selectedSpecialServices.fold<double>(
+      0.0,
+      (sum, addon) => sum + (addon.price * 1.0354),
+    );
+
+    final totalExtraPrice = recalculatedAddonPrice +
+                          recalculatedExtraSpecialPrice +
+                          recalculatedSpecialServicesPrice +
                           _totalCakePrice +
                           _extraPersonCharges;
     final grandTotal = basePrice + totalExtraPrice;
@@ -753,14 +769,25 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         ? (advancePaymentData!['total_price_user_sees'] as num).toDouble()
         : grandTotal;
 
-    // Calculate convenience fee (₹19 fixed tax) - we show it as "saved"
+    // Item Total is what user actually pays (no convenience fee added)
+    final itemTotal = totalPriceUserSees;
+
+    // Convenience fee is just shown as strikethrough (₹19 fixed)
     const convenienceFee = 19.0;
-    final itemTotal = totalPriceUserSees + convenienceFee;
+
+    // Total savings is just the convenience fee amount
+    const totalSavings = convenienceFee;
 
     // Calculate advance payment
     final advanceAmount = advancePaymentData != null
         ? (advancePaymentData!['user_advance_payment'] as num).toDouble()
         : 0.0;
+
+    // Check if any extras are selected
+    final hasExtras = widget.selectedAddons.isNotEmpty ||
+        widget.selectedExtraSpecials.isNotEmpty ||
+        widget.selectedSpecialServices.isNotEmpty ||
+        _selectedCakes.isNotEmpty;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -807,6 +834,216 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           ),
           const SizedBox(height: 16),
 
+          // Base Package Price
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  widget.selectedPackage?.packageName ?? 'Theater Booking',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    fontFamily: 'Okra',
+                    color: Colors.grey[700],
+                  ),
+                ),
+                Text(
+                  '₹${_formatPrice(basePrice)}',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Okra',
+                    color: Color(0xFF111827),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Extras Section
+          if (hasExtras) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Extras',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                fontFamily: 'Okra',
+                color: Colors.grey[600],
+              ),
+            ),
+            const SizedBox(height: 6),
+
+            // Add-ons
+            ...widget.selectedAddons.map((addon) {
+              final addonPriceWithTax = addon.price * 1.0354; // Add 3.54% tax
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '  • ${addon.displayName}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Okra',
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '₹${addonPriceWithTax.round()}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Okra',
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            // Extra Specials
+            ...widget.selectedExtraSpecials.map((addon) {
+              final addonPriceWithTax = addon.price * 1.0354; // Add 3.54% tax
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '  • ${addon.displayName}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Okra',
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '₹${addonPriceWithTax.round()}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Okra',
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            // Special Services
+            ...widget.selectedSpecialServices.map((addon) {
+              final addonPriceWithTax = addon.price * 1.0354; // Add 3.54% tax
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '  • ${addon.displayName}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Okra',
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '₹${addonPriceWithTax.round()}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Okra',
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            // Cakes
+            ..._selectedCakes.map((cake) {
+              final cakePriceWithTax = cake.price * 1.0354; // Add 3.54% tax
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '  • ${cake.displayName}',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w400,
+                          fontFamily: 'Okra',
+                          color: Colors.grey[600],
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '₹${cakePriceWithTax.round()}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Okra',
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+
+            // Extra person charges if any
+            if (_extraPersonCharges > 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '  • Extra Person Charges',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                        fontFamily: 'Okra',
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    Text(
+                      '₹${_formatPrice(_extraPersonCharges)}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        fontFamily: 'Okra',
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+
+          const Divider(height: 24),
+
           // Item Total with strikethrough
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
@@ -826,7 +1063,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 Row(
                   children: [
                     Text(
-                      '₹${_formatPrice(itemTotal)}',
+                      '₹${_formatPrice(itemTotal + convenienceFee)}',
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -838,7 +1075,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '₹${_formatPrice(totalPriceUserSees)}',
+                      '₹${_formatPrice(itemTotal)}',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -993,7 +1230,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   ],
                 ),
                 Text(
-                  '₹${convenienceFee.round()}',
+                  '₹${_formatPrice(totalSavings)}',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -1209,10 +1446,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         throw Exception('User not authenticated');
       }
 
+      // Recalculate addon prices with correct formula
+      final recalculatedAddonPrice = widget.selectedAddons.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+      final recalculatedExtraSpecialPrice = widget.selectedExtraSpecials.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+      final recalculatedSpecialServicesPrice = widget.selectedSpecialServices.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+
       final grandTotal = widget.timeSlot.basePrice +
-                        widget.totalAddonPrice +
-                        widget.totalExtraSpecialPrice +
-                        widget.totalSpecialServicesPrice +
+                        recalculatedAddonPrice +
+                        recalculatedExtraSpecialPrice +
+                        recalculatedSpecialServicesPrice +
                         _totalCakePrice +
                         _extraPersonCharges;
 
@@ -1620,9 +1871,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     try {
       final basePrice = widget.timeSlot.basePrice;
-      final addonsTotal = widget.totalAddonPrice +
-                          widget.totalExtraSpecialPrice +
-                          widget.totalSpecialServicesPrice +
+
+      // Recalculate addon prices with correct formula
+      final recalculatedAddonPrice = widget.selectedAddons.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+      final recalculatedExtraSpecialPrice = widget.selectedExtraSpecials.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+      final recalculatedSpecialServicesPrice = widget.selectedSpecialServices.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+
+      final addonsTotal = recalculatedAddonPrice +
+                          recalculatedExtraSpecialPrice +
+                          recalculatedSpecialServicesPrice +
                           _totalCakePrice +
                           _extraPersonCharges;
 
@@ -1706,9 +1972,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       print('⚠️ Error calculating advance payment: $e');
       // Fallback to formula with default values
       final basePrice = widget.timeSlot.basePrice;
-      final addonsTotal = widget.totalAddonPrice +
-                          widget.totalExtraSpecialPrice +
-                          widget.totalSpecialServicesPrice +
+
+      // Recalculate addon prices with correct formula
+      final recalculatedAddonPrice = widget.selectedAddons.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+      final recalculatedExtraSpecialPrice = widget.selectedExtraSpecials.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+      final recalculatedSpecialServicesPrice = widget.selectedSpecialServices.fold<double>(
+        0.0,
+        (sum, addon) => sum + (addon.price * 1.0354),
+      );
+
+      final addonsTotal = recalculatedAddonPrice +
+                          recalculatedExtraSpecialPrice +
+                          recalculatedSpecialServicesPrice +
                           _totalCakePrice +
                           _extraPersonCharges;
 

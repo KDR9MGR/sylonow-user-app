@@ -97,25 +97,25 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
 
       if (!mounted) return;
 
-      debugPrint('🔄 Checking for app updates on home screen...');
+      //('🔄 Checking for app updates on home screen...');
 
       final updateInfo = await _appUpdateService.checkForUpdate();
 
       if (updateInfo != null && mounted) {
-        debugPrint('🔄 Update available! Showing dialog...');
+        //('🔄 Update available! Showing dialog...');
         _hasCheckedForUpdate = true;
         await _appUpdateService.showUpdateDialog(context, updateInfo);
       } else {
-        debugPrint('🔄 No update needed');
+        //('🔄 No update needed');
       }
     } catch (e) {
-      debugPrint('🔄 ❌ Error checking for updates: $e');
+      //('🔄 ❌ Error checking for updates: $e');
     }
   }
 
   Future<void> _checkAndShowWelcomeOverlay() async {
     try {
-      debugPrint('🎯 OptimizedHomeScreen checking welcome overlay...');
+      //('🎯 OptimizedHomeScreen checking welcome overlay...');
       // Wait for UI to be fully built
       await Future.delayed(const Duration(milliseconds: 500));
 
@@ -123,15 +123,15 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
       final hasShownWelcome = await welcomeService.hasShownWelcome();
 
       if (!hasShownWelcome && mounted) {
-        debugPrint('🎯 Showing welcome overlay for the first time...');
+        //('🎯 Showing welcome overlay for the first time...');
         setState(() {
           _showWelcomeOverlay = true;
         });
       } else {
-        debugPrint('🎯 Welcome overlay already shown, skipping...');
+        //('🎯 Welcome overlay already shown, skipping...');
       }
     } catch (e) {
-      debugPrint('Welcome overlay check error: $e');
+      //('Welcome overlay check error: $e');
     }
   }
 
@@ -144,32 +144,32 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
         _showWelcomeOverlay = false;
       });
       
-      debugPrint('🎯 Welcome overlay marked as completed');
+      //('🎯 Welcome overlay marked as completed');
     } catch (e) {
-      debugPrint('Error marking welcome completed: $e');
+      //('Error marking welcome completed: $e');
     }
   }
 
   /// Initialize FCM token and update user profile
   Future<void> _initializeFCMToken() async {
     try {
-      debugPrint('🔔 Initializing FCM token...');
+      //('🔔 Initializing FCM token...');
       
       // Get current user
       final currentUser = ref.read(currentUserProvider);
       if (currentUser == null) {
-        debugPrint('🔔 No authenticated user found, skipping FCM token initialization');
+        //('🔔 No authenticated user found, skipping FCM token initialization');
         return;
       }
 
-      debugPrint('🔔 Current user found: ${currentUser.id}');
+      //('🔔 Current user found: ${currentUser.id}');
 
       // Request notification permissions
       final messaging = FirebaseMessaging.instance;
       
       // Check current permission status first
       NotificationSettings initialSettings = await messaging.getNotificationSettings();
-      debugPrint('🔔 Current notification permission status: ${initialSettings.authorizationStatus}');
+      //('🔔 Current notification permission status: ${initialSettings.authorizationStatus}');
       
       final settings = await messaging.requestPermission(
         alert: true,
@@ -181,59 +181,59 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
         sound: true,
       );
 
-      debugPrint('🔔 Notification permission after request: ${settings.authorizationStatus}');
+      //('🔔 Notification permission after request: ${settings.authorizationStatus}');
 
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
-        debugPrint('🔔 Notification permission granted, getting FCM token...');
+        //('🔔 Notification permission granted, getting FCM token...');
 
         // Get FCM token with timeout
         final fcmToken = await messaging.getToken().timeout(
           const Duration(seconds: 10),
           onTimeout: () {
-            debugPrint('🔔 FCM token request timed out');
+            //('🔔 FCM token request timed out');
             return null;
           },
         );
 
         if (fcmToken != null && fcmToken.isNotEmpty) {
-          debugPrint('🔔 FCM token received: ${fcmToken.length > 20 ? fcmToken.substring(0, 20) : fcmToken}...');
+          //('🔔 FCM token received: ${fcmToken.length > 20 ? fcmToken.substring(0, 20) : fcmToken}...');
           
           // Update user profile with FCM token
           await _updateUserFCMToken(currentUser.id, fcmToken);
         } else {
-          debugPrint('🔔 Failed to get valid FCM token');
+          //('🔔 Failed to get valid FCM token');
         }
       } else {
-        debugPrint('🔔 Notification permission denied: ${settings.authorizationStatus}');
+        //('🔔 Notification permission denied: ${settings.authorizationStatus}');
       }
 
       // Listen for token refresh (only set up once)
       messaging.onTokenRefresh.listen((newToken) {
         final currentUser = ref.read(currentUserProvider);
         if (currentUser != null && newToken.isNotEmpty) {
-          debugPrint('🔔 FCM token refreshed: ${newToken.length > 20 ? newToken.substring(0, 20) : newToken}...');
+          //('🔔 FCM token refreshed: ${newToken.length > 20 ? newToken.substring(0, 20) : newToken}...');
           _updateUserFCMToken(currentUser.id, newToken);
         }
       });
 
       // Handle foreground messages
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        debugPrint('🔔 Foreground message received: ${message.messageId}');
-        debugPrint('🔔 Message title: ${message.notification?.title}');
-        debugPrint('🔔 Message body: ${message.notification?.body}');
+        //('🔔 Foreground message received: ${message.messageId}');
+        //('🔔 Message title: ${message.notification?.title}');
+        //('🔔 Message body: ${message.notification?.body}');
       });
 
     } catch (e, stackTrace) {
-      debugPrint('🔔 Error initializing FCM token: $e');
-      debugPrint('🔔 Stack trace: $stackTrace');
+      //('🔔 Error initializing FCM token: $e');
+      //('🔔 Stack trace: $stackTrace');
     }
   }
 
   /// Update user FCM token in the database
   Future<void> _updateUserFCMToken(String authUserId, String fcmToken) async {
     try {
-      debugPrint('🔔 Updating FCM token in database for user: $authUserId');
+      //('🔔 Updating FCM token in database for user: $authUserId');
       
       final profileRepository = ref.read(profileRepositoryProvider);
       await profileRepository.updateFcmToken(
@@ -241,24 +241,24 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
         fcmToken: fcmToken,
       );
       
-      debugPrint('🔔 ✅ FCM token successfully upserted in user_profiles table');
+      //('🔔 ✅ FCM token successfully upserted in user_profiles table');
       
       // Verify the update by checking if profile exists
       final updatedProfile = await profileRepository.getUserProfile(authUserId);
       if (updatedProfile?.fcmToken == fcmToken) {
-        debugPrint('🔔 ✅ FCM token verification successful');
+        //('🔔 ✅ FCM token verification successful');
       } else {
-        debugPrint('🔔 ⚠️ FCM token verification failed - token may not have been saved correctly');
+        //('🔔 ⚠️ FCM token verification failed - token may not have been saved correctly');
       }
       
     } catch (e, stackTrace) {
-      debugPrint('🔔 ❌ Error updating FCM token in database: $e');
-      debugPrint('🔔 Stack trace: $stackTrace');
+      //('🔔 ❌ Error updating FCM token in database: $e');
+      //('🔔 Stack trace: $stackTrace');
       
       // Retry once after a delay
       try {
         await Future.delayed(const Duration(seconds: 2));
-        debugPrint('🔔 Retrying FCM token update...');
+        //('🔔 Retrying FCM token update...');
         
         final profileRepository = ref.read(profileRepositoryProvider);
         await profileRepository.updateFcmToken(
@@ -266,9 +266,9 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
           fcmToken: fcmToken,
         );
         
-        debugPrint('🔔 ✅ FCM token updated successfully on retry');
+        //('🔔 ✅ FCM token updated successfully on retry');
       } catch (retryError) {
-        debugPrint('🔔 ❌ Failed to update FCM token on retry: $retryError');
+        //('🔔 ❌ Failed to update FCM token on retry: $retryError');
       }
     }
   }
@@ -291,14 +291,14 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
   // Performance optimization: Run location operations asynchronously
   Future<void> _checkLocationPermissionAsync() async {
     try {
-      debugPrint('🔍 Location permission check started...');
+      //('🔍 Location permission check started...');
       setState(() {
         _isLocationLoading = true;
         _isLocationServiceDisabled = false; // Reset the service disabled flag
       });
       await _checkLocationPermission();
     } catch (e) {
-      debugPrint('Location check error: $e');
+      //('Location check error: $e');
       if (mounted) {
         setState(() {
           _isLocationLoading = false;
@@ -313,20 +313,20 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
     final locationService = ref.read(locationServiceProvider);
     final permissionStatus = await locationService.getPermissionStatus();
     
-    debugPrint('🔍 Current permission status: $permissionStatus');
+    //('🔍 Current permission status: $permissionStatus');
 
     if (permissionStatus == LocationPermission.denied) {
-      debugPrint('🔍 Permission denied, requesting permission...');
+      //('🔍 Permission denied, requesting permission...');
       // Request permission directly using system prompt
       final newStatus = await locationService.requestPermission();
-      debugPrint('🔍 New permission status after request: $newStatus');
+      //('🔍 New permission status after request: $newStatus');
       
       if (newStatus == LocationPermission.whileInUse ||
           newStatus == LocationPermission.always) {
-        debugPrint('🔍 Permission granted, checking location service...');
+        //('🔍 Permission granted, checking location service...');
         _checkLocationService();
       } else {
-        debugPrint('🔍 Permission still denied, showing blocked screen');
+        //('🔍 Permission still denied, showing blocked screen');
         setState(() {
           _isLocationLoading = false;
           _isLocationEnabled = false;
@@ -335,11 +335,11 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
       }
     } else if (permissionStatus == LocationPermission.whileInUse ||
         permissionStatus == LocationPermission.always) {
-      debugPrint('🔍 Permission already granted, checking location service...');
+      //('🔍 Permission already granted, checking location service...');
       _checkLocationService();
     } else {
       // Permission denied forever or other states - show blocked screen
-      debugPrint('🔍 Permission denied forever or other state, showing blocked screen');
+      //('🔍 Permission denied forever or other state, showing blocked screen');
       setState(() {
         _isLocationLoading = false;
         _isLocationEnabled = false;
@@ -350,30 +350,30 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
 
   Future<void> _checkLocationService() async {
     final locationService = ref.read(locationServiceProvider);
-    debugPrint('🔍 Checking if location service is enabled...');
+    //('🔍 Checking if location service is enabled...');
     final serviceEnabled = await locationService.isLocationServiceEnabled();
-    debugPrint('🔍 Location service enabled: $serviceEnabled');
+    //('🔍 Location service enabled: $serviceEnabled');
 
     if (!serviceEnabled) {
       // Location service is disabled - prompt user to enable it
-      debugPrint('🔍 Location service disabled, prompting user to enable...');
+      //('🔍 Location service disabled, prompting user to enable...');
       try {
-        debugPrint('🔍 Opening native location settings dialog...');
+        //('🔍 Opening native location settings dialog...');
         await locationService.openLocationSettings();
         
         // Wait a moment for the user to potentially enable location
         await Future.delayed(const Duration(milliseconds: 1500));
         
         // Check again if location service is now enabled
-        debugPrint('🔍 Re-checking location service after settings dialog...');
+        //('🔍 Re-checking location service after settings dialog...');
         final newServiceEnabled = await locationService.isLocationServiceEnabled();
-        debugPrint('🔍 Location service enabled after dialog: $newServiceEnabled');
+        //('🔍 Location service enabled after dialog: $newServiceEnabled');
         
         if (newServiceEnabled) {
-          debugPrint('🔍 Location service now enabled, getting current location...');
+          //('🔍 Location service now enabled, getting current location...');
           _getCurrentLocation();
         } else {
-          debugPrint('🔍 Location service still disabled, showing blocked screen');
+          //('🔍 Location service still disabled, showing blocked screen');
           setState(() {
             _isLocationLoading = false;
             _isLocationEnabled = false;
@@ -381,7 +381,7 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
           });
         }
       } catch (e) {
-        debugPrint('🔍 Error opening location settings: $e');
+        //('🔍 Error opening location settings: $e');
         setState(() {
           _isLocationLoading = false;
           _isLocationEnabled = false;
@@ -389,34 +389,34 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
         });
       }
     } else {
-      debugPrint('🔍 Location service enabled, getting current location...');
+      //('🔍 Location service enabled, getting current location...');
       _getCurrentLocation();
     }
   }
 
   Future<void> _getCurrentLocation() async {
     try {
-      debugPrint('🔍 Getting current location...');
+      //('🔍 Getting current location...');
       final locationService = ref.read(locationServiceProvider);
       final position = await locationService.getCurrentLocation().timeout(
         const Duration(seconds: 30),
       );
       
-      debugPrint('🔍 Location result: ${position != null ? "Success (${position.latitude}, ${position.longitude})" : "Failed - null position"}');
+      //('🔍 Location result: ${position != null ? "Success (${position.latitude}, ${position.longitude})" : "Failed - null position"}');
 
       if (position != null && mounted) {
-        debugPrint('🔍 Processing location data...');
+        //('🔍 Processing location data...');
         // Performance optimization: Run geocoding on background isolate
         _processLocationData(position);
       } else if (mounted) {
-        debugPrint('🔍 Position is null, showing blocked screen');
+        //('🔍 Position is null, showing blocked screen');
         setState(() {
           _isLocationLoading = false;
           _isLocationEnabled = false;
         });
       }
     } catch (e) {
-      debugPrint('🔍 Location error: $e');
+      //('🔍 Location error: $e');
       if (mounted) {
         setState(() {
           _isLocationLoading = false;
@@ -428,12 +428,12 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
 
   void _processLocationData(Position position) async {
     try {
-      debugPrint('🔍 Processing location data for coordinates: (${position.latitude}, ${position.longitude})');
+      //('🔍 Processing location data for coordinates: (${position.latitude}, ${position.longitude})');
       final placemarks = await placemarkFromCoordinates(
         position.latitude,
         position.longitude,
       );
-      debugPrint('🔍 Geocoding result: ${placemarks.isNotEmpty ? "Success - ${placemarks.length} placemarks found" : "No placemarks found"}');
+      //('🔍 Geocoding result: ${placemarks.isNotEmpty ? "Success - ${placemarks.length} placemarks found" : "No placemarks found"}');
 
       if (mounted) {
         final placemark = placemarks.isNotEmpty ? placemarks.first : null;
@@ -454,24 +454,24 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
           city: placemark?.locality, // City (e.g., Mumbai, Bangalore)
         );
 
-        debugPrint('🔍 Setting address: ${currentAddress.address}');
-        debugPrint('🔍 With coordinates: (${currentAddress.latitude}, ${currentAddress.longitude})');
+        //('🔍 Setting address: ${currentAddress.address}');
+        //('🔍 With coordinates: (${currentAddress.latitude}, ${currentAddress.longitude})');
         ref.read(selectedAddressProvider.notifier).state = currentAddress;
 
         setState(() {
           _isLocationEnabled = true;
           _isLocationLoading = false;
         });
-        debugPrint('🔍 ✅ Location setup completed successfully!');
+        //('🔍 ✅ Location setup completed successfully!');
       }
     } catch (e) {
-      debugPrint('🔍 Geocoding error: $e');
+      //('🔍 Geocoding error: $e');
       if (mounted) {
         setState(() {
           _isLocationEnabled = true;
           _isLocationLoading = false;
         });
-        debugPrint('🔍 ✅ Location setup completed with geocoding error (using coordinates)');
+        //('🔍 ✅ Location setup completed with geocoding error (using coordinates)');
       }
     }
   }
@@ -542,7 +542,7 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
     });
 
     try {
-      debugPrint('🔄 Starting refresh...');
+      //('🔄 Starting refresh...');
 
       // Invalidate all providers to trigger refresh
       ref.invalidate(featuredServicesProvider);
@@ -557,9 +557,9 @@ class _OptimizedHomeScreenState extends ConsumerState<OptimizedHomeScreen>
       // The nearby services will use the selected address coordinates
       // Only update GPS if no address is selected
 
-      debugPrint('🔄 ✅ Refresh completed successfully!');
+      //('🔄 ✅ Refresh completed successfully!');
     } catch (e) {
-      debugPrint('🔄 ❌ Refresh error: $e');
+      //('🔄 ❌ Refresh error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

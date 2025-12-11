@@ -262,7 +262,7 @@ class _MainAppState extends ConsumerState<MainApp> {
       }
     } catch (e) {
       if (kDebugMode) {
-        debugPrint('Error checking for updates: $e');
+        //('Error checking for updates: $e');
       }
     }
   }

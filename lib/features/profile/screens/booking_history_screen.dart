@@ -1819,7 +1819,7 @@ class _BookingHistoryScreenState extends ConsumerState<BookingHistoryScreen> {
       final homeRepository = ref.read(homeRepositoryProvider);
 
       if (order.serviceListingId == null) {
-        debugPrint('❌ Order has no service listing ID');
+        //('❌ Order has no service listing ID');
         return false;
       }
 
@@ -1828,16 +1828,13 @@ class _BookingHistoryScreenState extends ConsumerState<BookingHistoryScreen> {
       );
 
       if (serviceListing == null) {
-        debugPrint('❌ Could not fetch service listing');
+        //('❌ Could not fetch service listing');
         return false;
       }
 
       // Parse setup time from service listing
       final setupTimeHours = _parseSetupTimeToHours(serviceListing.setupTime);
-      debugPrint(
-        '📋 Setup time: ${serviceListing.setupTime} -> $setupTimeHours hours',
-      );
-
+    
       // Calculate cancellation deadline
       // Formula: booking_date + booking_time - (setup_time + 1 hour)
       DateTime serviceDateTime;
@@ -1873,14 +1870,14 @@ class _BookingHistoryScreenState extends ConsumerState<BookingHistoryScreen> {
       );
       final now = DateTime.now();
 
-      debugPrint('🕐 Service DateTime: $serviceDateTime');
-      debugPrint('⏰ Cancellation Deadline: $cancellationDeadline');
-      debugPrint('🕒 Current Time: $now');
-      debugPrint('✅ Can Cancel: ${now.isBefore(cancellationDeadline)}');
+      //('🕐 Service DateTime: $serviceDateTime');
+      //('⏰ Cancellation Deadline: $cancellationDeadline');
+      //('🕒 Current Time: $now');
+      //('✅ Can Cancel: ${now.isBefore(cancellationDeadline)}');
 
       return now.isBefore(cancellationDeadline);
     } catch (e) {
-      debugPrint('❌ Error checking cancel eligibility: $e');
+      //('❌ Error checking cancel eligibility: $e');
       return false; // Default to not allowing cancellation if there's an error
     }
   }

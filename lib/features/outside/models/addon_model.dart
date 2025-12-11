@@ -36,8 +36,12 @@ class AddonModel {
       imageUrl: json['image_url'] as String?,
       isActive: json['is_active'] as bool? ?? true,
       vendorId: json['vendor_id'] as String?,
-      createdAt: json['created_at'] != null ? DateTime.parse(json['created_at'] as String) : null,
-      updatedAt: json['updated_at'] != null ? DateTime.parse(json['updated_at'] as String) : null,
+      createdAt: json['created_at'] != null
+          ? DateTime.parse(json['created_at'] as String)
+          : null,
+      updatedAt: json['updated_at'] != null
+          ? DateTime.parse(json['updated_at'] as String)
+          : null,
     );
   }
 
@@ -86,12 +90,45 @@ class AddonModel {
   }
 
   // Helper methods
-  String get formattedPrice => '₹${price.round()}';
-  
+
+  /// Calculate final price with transaction fee and rounding (same as theater time slots)
+  /// No convenience fee is added for add-ons in detail screen
+  double get finalPrice {
+    // Same calculation as PriceCalculator.calculateTheaterCheckoutTotalWithTaxes
+    const transactionFeeRate = 0.0354; // 3.54%
+    final transactionFee = price * transactionFeeRate;
+    final totalAmount = price + transactionFee;
+
+    // Apply psychological rounding (prices ending in 49 or 99)
+    return _applyFinalRounding(totalAmount);
+  }
+
+  /// Apply final rounding to ensure prices end with 49 or 99
+  double _applyFinalRounding(double amount) {
+    final rounded = amount.round();
+    final lastDigit = rounded % 10;
+
+    if (lastDigit <= 4) {
+      // Round down to nearest 49
+      return (rounded ~/ 10) * 10 + 49 - 10;
+    } else if (lastDigit >= 5 && lastDigit <= 9) {
+      // Round to nearest 49 or 99
+      if (lastDigit <= 7) {
+        return (rounded ~/ 10) * 10 + 49;
+      } else {
+        return (rounded ~/ 10) * 10 + 99;
+      }
+    }
+
+    return rounded.toDouble();
+  }
+
+  String get formattedPrice => '₹${finalPrice.round()}';
+
   bool get hasImage => imageUrl != null && imageUrl!.isNotEmpty;
-  
+
   String get displayName => name;
-  
+
   String get displayDescription => description ?? 'Add-on for your package';
 
   @override

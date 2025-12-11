@@ -89,12 +89,12 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
       // Validate selected date - but DON'T override if it's a valid date that was loaded from preferences
       if (selectedDate != 'Select Date' && !availableDates.contains(selectedDate)) {
         // Only reset if the loaded date is truly unavailable
-        debugPrint('⚠️ Selected date $selectedDate is not available in vendor dates');
+        //('⚠️ Selected date $selectedDate is not available in vendor dates');
         setState(() {
           selectedDate = availableDates.isNotEmpty
               ? availableDates.first
               : 'Select Date';
-          debugPrint('📅 Reset to first available date: $selectedDate');
+          //('📅 Reset to first available date: $selectedDate');
         });
 
         // Rebuild time slots for the new selected date
@@ -103,11 +103,11 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         }
       } else if (selectedDate != 'Select Date') {
         // Date is valid and available, just rebuild time slots
-        debugPrint('✅ Selected date $selectedDate is valid and available');
+        //('✅ Selected date $selectedDate is valid and available');
         _rebuildTimeSlotsForSelectedDate();
       }
     } catch (e) {
-      debugPrint('❌ Error validating selected values: $e');
+      //('❌ Error validating selected values: $e');
       // Fallback to basic validation if async fails
       final fallbackDates = _getAvailableDates();
       if (selectedDate != 'Select Date' && !fallbackDates.contains(selectedDate)) {
@@ -157,54 +157,34 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
     // Initialize add-ons from service data
     availableAddOns = widget.service.addOns ?? [];
 
-    debugPrint('🎨 Booking screen initialized with:');
-    debugPrint('  - Venue types: $venueTypes');
-    debugPrint('  - Service environments: $serviceEnvironments');
-    debugPrint('  - Available add-ons: ${availableAddOns.length}');
+ 
   }
 
   Future<void> _loadVendorAndBuildTimeSlots() async {
     try {
-      debugPrint('🕒 ===== STARTING VENDOR LOAD =====');
+     
       final repo = ref.read(homeRepositoryProvider);
       final vendorId = widget.service.vendorId;
-      debugPrint('🕒 Service vendor ID: $vendorId');
-      debugPrint('🕒 Service ID: ${widget.service.id}');
-      debugPrint('🕒 Service name: ${widget.service.name}');
+      
 
       if (vendorId == null) {
-        debugPrint('❌ Vendor ID is null for service ${widget.service.id}');
+       
         setState(() {
           timeSlots = [];
         });
         return;
       }
 
-      debugPrint('🕒 Calling repo.getVendorById($vendorId)');
+     
       final vendor = await repo.getVendorById(vendorId);
-      debugPrint('🕒 Repository returned vendor: $vendor');
+      
 
       _vendor = vendor;
       _isVendorOnline = vendor?.isOnline ?? false;
       _vendorStartTime = vendor?.startTime; // expected HH:mm or HH:mm:ss
       _vendorCloseTime = vendor?.closeTime; // expected HH:mm or HH:mm:ss
 
-      debugPrint('🕒 ===== VENDOR DEBUG INFO =====');
-      debugPrint('🕒 Vendor ID: $vendorId');
-      debugPrint('🕒 Vendor from DB: $vendor');
-      debugPrint('🕒 Raw isOnline value: ${vendor?.isOnline}');
-      debugPrint('🕒 Parsed _isVendorOnline: $_isVendorOnline');
-      debugPrint(
-        '🕒 Business hours: ${_vendorStartTime ?? 'null'} to ${_vendorCloseTime ?? 'null'}',
-      );
-      debugPrint(
-        '🕒 Advance booking hours: ${vendor?.advanceBookingHours ?? 'null'}',
-      );
-      debugPrint('🕒 ===============================');
-
-      // Note: Now using exact booking notice parsing directly in time slot generation
-
-      // Force state update and rebuild time slots
+      
       setState(() {});
 
       // Validate selected values after vendor data is loaded
@@ -212,8 +192,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
 
       _rebuildTimeSlotsForSelectedDate();
     } catch (e, stackTrace) {
-      debugPrint('❌ Failed to load vendor/time slots: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
+     
       setState(() {
         timeSlots = [];
       });
@@ -226,48 +205,33 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
   ) async {
     try {
       final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-      debugPrint(
-        '🔍 Fetching existing bookings for service $serviceId on $formattedDate',
-      );
+      
 
       final repo = ref.read(homeRepositoryProvider);
       final result = await repo.getExistingBookings(serviceId, formattedDate);
 
-      debugPrint('🔍 Found ${result.length} existing bookings: $result');
       return result;
     } catch (e) {
-      debugPrint('❌ Error fetching existing bookings: $e');
       return [];
     }
   }
 
   void _rebuildTimeSlotsForSelectedDate() async {
-    debugPrint('🕒 _rebuildTimeSlotsForSelectedDate called');
-    debugPrint('🕒 Vendor online: $_isVendorOnline');
-    debugPrint(
-      '🕒 Start time: $_vendorStartTime, Close time: $_vendorCloseTime',
-    );
-    debugPrint('🕒 Selected date: $selectedDate');
 
-    // If vendor is offline, do not show time slots
     if (!_isVendorOnline) {
-      debugPrint('🕒 Vendor is offline, clearing time slots');
       setState(() {
         timeSlots = [];
       });
       return;
     }
 
-    // Require vendor business hours
     if (_vendorStartTime == null || _vendorCloseTime == null) {
-      debugPrint('🕒 Vendor has no business hours set, clearing time slots');
       setState(() {
         timeSlots = [];
       });
       return;
     }
 
-    // Parse selected date
     DateTime? date;
     try {
       if (selectedDate != 'Select Date') {
@@ -277,25 +241,21 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
           int.parse(parts[1]),
           int.parse(parts[0]),
         );
-        debugPrint(
-          '🕒 Parsed selected date: ${DateFormat('yyyy-MM-dd').format(date)}',
-        );
+      
       }
     } catch (e) {
-      debugPrint('❌ Error parsing selected date: $e');
+     
     }
 
     if (date == null) {
-      debugPrint('🕒 Using current date as fallback');
       date = DateTime.now();
     }
 
-    // Check if the selected date is today
     final today = DateTime.now();
     final isToday =
         DateFormat('yyyy-MM-dd').format(date) ==
         DateFormat('yyyy-MM-dd').format(today);
-    debugPrint('🕒 Selected date is today: $isToday');
+    //('🕒 Selected date is today: $isToday');
 
     // Build DateTime for start and end using vendor hours (HH:mm)
     DateTime? startDateTime = _combineDateWithHm(date, _vendorStartTime!);
@@ -312,12 +272,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
     final exactBookingNoticeHours = _parseBookingNoticeToHours(
       widget.service.bookingNotice,
     );
-    debugPrint(
-      '🕒 Local current time: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}',
-    );
-    debugPrint('🕒 Local timezone: ${now.timeZoneName}');
-    debugPrint('🕒 Is UTC: ${now.timeZoneOffset == Duration.zero}');
-    debugPrint('🕒 Exact booking notice: $exactBookingNoticeHours hours');
+ 
     final minStart = now.add(Duration(hours: exactBookingNoticeHours));
     if (minStart.isAfter(DateTime(date.year, date.month, date.day, 23, 59))) {
       // If viewing today and minStart pushes booking to future day, shift to next day business hours
@@ -345,12 +300,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
             : minStart.hour, // Round up to next hour if there are minutes
         0,
       );
-      debugPrint(
-        '🕒 Booking notice time: ${DateFormat('HH:mm').format(minStart)}',
-      );
-      debugPrint(
-        '🕒 Rounded start time for slots: ${DateFormat('HH:mm').format(startDateTime)}',
-      );
+   
     }
 
     // Ensure start < end
@@ -368,27 +318,11 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
       widget.service.id,
       date,
     );
-    debugPrint('🔒 Existing bookings to exclude: $existingBookings');
 
-    // Generate hourly start times between startDateTime and endDateTime (inclusive of start, exclusive of end)
     final slots = <String>[];
     final formatter = DateFormat('hh:mm a');
     DateTime cursor = DateTime(sdt.year, sdt.month, sdt.day, sdt.hour, 0);
-    debugPrint(
-      '🕒 Generating time slots from ${formatter.format(sdt)} to ${formatter.format(edt)}',
-    );
-    debugPrint('🕒 Current time: ${formatter.format(now)}');
-    debugPrint('🕒 Selected date string: $selectedDate');
-    debugPrint('🕒 Parsed date: $date');
-    debugPrint(
-      '🕒 Is today: ${DateFormat('dd/MM/yyyy').format(DateTime.now()) == selectedDate}',
-    );
-    debugPrint(
-      '🕒 Start DateTime: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(sdt)}',
-    );
-    debugPrint(
-      '🕒 End DateTime: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(edt)}',
-    );
+
 
     while (cursor.isBefore(edt)) {
       final timeSlot = formatter.format(cursor);
@@ -406,41 +340,30 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
 
       // Debug logging for time slot validation
       if (isToday) {
-        debugPrint('🔍 Checking slot for TODAY: $timeSlot');
       } else {
-        debugPrint('🔍 Checking slot for FUTURE DATE: $timeSlot');
       }
-      debugPrint(
-        '  - Current time: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(now)}',
-      );
-      debugPrint(
-        '  - Cursor time: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(cursor)}',
-      );
-      debugPrint(
-        '  - Booking notice deadline: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(bookingNoticeTime)}',
-      );
-      debugPrint('  - Is after booking notice: $isCurrentTimeValid');
+  
 
       final isNotBooked = !existingBookings.contains(
         timeSlot,
       ); // Not already booked
-      debugPrint('  - Is not booked: $isNotBooked');
+      //('  - Is not booked: $isNotBooked');
 
       if (isCurrentTimeValid && isNotBooked) {
         slots.add(timeSlot);
-        debugPrint('🕒 Added available time slot: $timeSlot');
+        //('🕒 Added available time slot: $timeSlot');
       } else {
         if (!isCurrentTimeValid) {
-          debugPrint('🕒 Skipped time slot (too soon): $timeSlot');
+          //('🕒 Skipped time slot (too soon): $timeSlot');
         }
         if (!isNotBooked) {
-          debugPrint('🔒 Skipped booked time slot: $timeSlot');
+          //('🔒 Skipped booked time slot: $timeSlot');
         }
       }
       cursor = cursor.add(const Duration(hours: 1));
     }
 
-    debugPrint('🕒 Generated ${slots.length} available time slots: $slots');
+    //('🕒 Generated ${slots.length} available time slots: $slots');
     setState(() {
       timeSlots = slots;
       if (!timeSlots.contains(selectedTime)) {
@@ -457,7 +380,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
       // Handle both HH:mm and HH:mm:ss formats from database
       return DateTime(date.year, date.month, date.day, h, m);
     } catch (e) {
-      debugPrint('❌ Error parsing time format "$hm": $e');
+      //('❌ Error parsing time format "$hm": $e');
       return null;
     }
   }
@@ -479,11 +402,8 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
           setState(() {
             selectedDate = formattedCelebrationDate;
           });
-          debugPrint('🎉 Auto-selected user celebration date: $selectedDate');
         } else {
-          debugPrint(
-            '🎉 User celebration date $formattedCelebrationDate not in available dates, keeping default',
-          );
+         
         }
 
         // Auto-select celebration time if available
@@ -530,54 +450,50 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
               setState(() {
                 selectedTime = matchingTimeSlot!;
               });
-              debugPrint(
-                '🎉 Auto-selected user celebration time: $selectedTime',
-              );
+             
             }
           } catch (e) {
-            debugPrint('Error parsing celebration time: $e');
+            //('Error parsing celebration time: $e');
           }
         }
       }
     } catch (e) {
-      debugPrint('Error loading user profile for auto-date selection: $e');
+      //('Error loading user profile for auto-date selection: $e');
     }
   }
 
   Future<void> _loadWelcomePreferences() async {
     try {
-      debugPrint('🎯 _loadWelcomePreferences started');
+      //('🎯 _loadWelcomePreferences started');
       final welcomeService = ref.read(welcomePreferencesServiceProvider);
 
       // Load saved celebration date and time (only if not already set from user profile)
       if (selectedDate == 'Select Date') {
-        debugPrint('🎯 Selected date is default, attempting to load from preferences');
+        //('🎯 Selected date is default, attempting to load from preferences');
         final savedDate = await welcomeService.getCelebrationDate();
-        debugPrint('🎯 Retrieved saved date from preferences: $savedDate');
+        //('🎯 Retrieved saved date from preferences: $savedDate');
 
         if (savedDate != null && mounted) {
           final formattedSavedDate = DateFormat('dd/MM/yyyy').format(savedDate);
-          debugPrint('🎯 Formatted saved date: $formattedSavedDate');
+          //('🎯 Formatted saved date: $formattedSavedDate');
 
           final availableDates = await _getAvailableDatesWithVendorBlocking();
-          debugPrint('🎯 Available dates: $availableDates');
+          //('🎯 Available dates: $availableDates');
 
           // Only set the saved date if it exists in the available dates
           if (availableDates.contains(formattedSavedDate)) {
             setState(() {
               selectedDate = formattedSavedDate;
             });
-            debugPrint('🎯 ✅ Loaded saved celebration date: $selectedDate');
+            //('🎯 ✅ Loaded saved celebration date: $selectedDate');
           } else {
-            debugPrint(
-              '🎯 ⚠️ Saved date $formattedSavedDate not in available dates, keeping default',
-            );
+            //(
           }
         } else {
-          debugPrint('🎯 No saved date found in preferences or widget not mounted');
+          //('🎯 No saved date found in preferences or widget not mounted');
         }
       } else {
-        debugPrint('🎯 Selected date already set to: $selectedDate, skipping preferences load');
+        //('🎯 Selected date already set to: $selectedDate, skipping preferences load');
       }
 
       if (selectedTime.isEmpty) {
@@ -601,14 +517,11 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
             setState(() {
               selectedTime = matchingTimeSlot!;
             });
-            debugPrint(
-              '🎯 Loaded saved celebration time: $selectedTime (from ${savedTime.hour}:${savedTime.minute})',
-            );
           }
         }
       }
     } catch (e) {
-      debugPrint('Error loading welcome preferences: $e');
+      //('Error loading welcome preferences: $e');
     }
   }
 
@@ -971,7 +884,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         }
 
         if (snapshot.hasError) {
-          debugPrint('❌ Error loading dates with availability: ${snapshot.error}');
+          //('❌ Error loading dates with availability: ${snapshot.error}');
           return SizedBox(
             height: 60,
             child: Center(
@@ -1515,9 +1428,6 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
     final int advanceBookingHours = _parseBookingNoticeToHours(
       widget.service.bookingNotice,
     );
-    debugPrint(
-      '📋 Service booking notice: ${widget.service.bookingNotice} -> $advanceBookingHours hours advance required',
-    );
 
     // Calculate the earliest date available for booking based on exact booking notice hours
     final earliestBookingDateTime = now.add(
@@ -1529,15 +1439,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
       earliestBookingDateTime.day,
     );
 
-    debugPrint(
-      '🕐 Current time: ${DateFormat('dd/MM/yyyy HH:mm').format(now)}',
-    );
-    debugPrint(
-      '📅 Earliest booking time (after $advanceBookingHours hours notice): ${DateFormat('dd/MM/yyyy HH:mm').format(earliestBookingDateTime)}',
-    );
-    debugPrint(
-      '📅 Earliest booking date: ${DateFormat('dd/MM/yyyy').format(earliestBookingDate)}',
-    );
+  
 
     // Generate initial list of 15 dates from earliest booking date
     final List<String> potentialDates = List.generate(15, (index) {
@@ -1545,18 +1447,14 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
       return '${date.day}/${date.month}/${date.year}';
     });
 
-    debugPrint(
-      '🗓️ Generated ${potentialDates.length} potential dates from ${DateFormat('dd/MM/yyyy').format(earliestBookingDate)}',
-    );
+   
     return potentialDates;
   }
 
   /// Get all dates with their availability status (available/blocked)
   Future<List<Map<String, dynamic>>> _getDatessWithAvailabilityStatus() async {
     if (widget.service.vendorId == null) {
-      debugPrint(
-        '⚠️ No vendor ID available, returning basic date list with all available status',
-      );
+  
       final dates = _getAvailableDates();
       return dates
           .map(
@@ -1603,21 +1501,19 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         });
 
         if (!isBlocked) {
-          debugPrint('✅ Date available: $dateStr');
+          //('✅ Date available: $dateStr');
         } else {
-          debugPrint('🚫 Date blocked: $dateStr (Vendor booking conflict)');
+          //('🚫 Date blocked: $dateStr (Vendor booking conflict)');
         }
       }
 
       final availableCount = datesWithStatus
           .where((d) => d['isAvailable'] == true)
           .length;
-      debugPrint(
-        '📅 Date status: $availableCount/${potentialDates.length} available, ${potentialDates.length - availableCount} blocked',
-      );
+   
       return datesWithStatus;
     } catch (e) {
-      debugPrint('❌ Error getting vendor blocking info: $e');
+      //('❌ Error getting vendor blocking info: $e');
       // Fallback to basic date list with all available status
       final dates = _getAvailableDates();
       return dates
@@ -1644,7 +1540,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
   /// Parse booking notice string to hours (for exact time calculation)
   int _parseBookingNoticeToHours(String? bookingNotice) {
     if (bookingNotice == null || bookingNotice.isEmpty) {
-      debugPrint('📋 No booking notice specified, defaulting to 0 hours');
+      //('📋 No booking notice specified, defaulting to 0 hours');
       return 0; // No advance booking required
     }
 
@@ -1655,9 +1551,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
     final match = numberRegex.firstMatch(lowerCaseNotice);
 
     if (match == null) {
-      debugPrint(
-        '📋 Could not parse booking notice: $bookingNotice, defaulting to 0 hours',
-      );
+     
       return 0;
     }
 
@@ -1666,22 +1560,20 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
     // Convert based on time unit to hours
     if (lowerCaseNotice.contains('day')) {
       final hours = (number * 24).round();
-      debugPrint('📋 Parsed booking notice: $number days -> $hours hours');
+      //('📋 Parsed booking notice: $number days -> $hours hours');
       return hours;
     } else if (lowerCaseNotice.contains('hour')) {
-      debugPrint('📋 Parsed booking notice: $number hours');
+      //('📋 Parsed booking notice: $number hours');
       return number.round();
     } else if (lowerCaseNotice.contains('week')) {
       final hours = (number * 7 * 24).round();
-      debugPrint('📋 Parsed booking notice: $number weeks -> $hours hours');
+      //('📋 Parsed booking notice: $number weeks -> $hours hours');
       return hours;
     }
 
     // Default assumption: if no unit specified, assume days and convert to hours
     final hours = (number * 24).round();
-    debugPrint(
-      '📋 Parsed booking notice (assuming days): $number days -> $hours hours',
-    );
+  
     return hours;
   }
 
@@ -1861,12 +1753,12 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         isUploadingImage = false;
       });
 
-      debugPrint('✅ Image selected: ${pickedImage.path}');
+      //('✅ Image selected: ${pickedImage.path}');
     } catch (e) {
       setState(() {
         isUploadingImage = false;
       });
-      debugPrint('❌ Error selecting image: $e');
+      //('❌ Error selecting image: $e');
       _showError('Failed to select image. Please try again.');
     }
   }
@@ -1913,12 +1805,12 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         isUploadingBannerImage = false;
       });
 
-      debugPrint('✅ Banner image selected: ${pickedImage.path}');
+      //('✅ Banner image selected: ${pickedImage.path}');
     } catch (e) {
       setState(() {
         isUploadingBannerImage = false;
       });
-      debugPrint('❌ Error selecting banner image: $e');
+      //('❌ Error selecting banner image: $e');
       _showError('Failed to select banner image. Please try again.');
     }
   }
@@ -2159,13 +2051,13 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
 
     // Validate service essential fields
     if (widget.service.id.isEmpty) {
-      debugPrint('❌ Service ID is empty');
+      //('❌ Service ID is empty');
       _showError('Invalid service. Please try again.');
       return;
     }
 
     if (widget.service.name.isEmpty) {
-      debugPrint('❌ Service name is empty');
+      //('❌ Service name is empty');
       _showError('Service information incomplete. Please try again.');
       return;
     }
@@ -2173,7 +2065,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
     // Check pricing information
     if (widget.service.originalPrice == null &&
         widget.service.offerPrice == null) {
-      debugPrint('⚠️ Service has no pricing information');
+      //('⚠️ Service has no pricing information');
     }
 
     // Create comprehensive customization data
@@ -2193,25 +2085,8 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
       'bannerText': bannerTextController.text.trim(), // Add the banner text
     };
 
-    debugPrint('✅ Navigating to booking details:');
-    debugPrint('  - Service: ${widget.service.name} (${widget.service.id})');
-    debugPrint('  - Venue: $selectedVenueType');
-    debugPrint('  - Environment: $selectedEnvironment');
-    debugPrint('  - Date & Time: $selectedDate at $selectedTime');
-    debugPrint('  - Simple Add-ons: $selectedAddOns');
-    debugPrint('  - Complex Add-ons: ${widget.addedAddons.keys.toList()}');
-    debugPrint(
-      '  - Comments: ${commentsController.text.isNotEmpty ? "Added" : "None"}',
-    );
-    debugPrint(
-      '  - Place Image: ${selectedPlaceImage != null ? "Selected" : "None"}',
-    );
-    debugPrint(
-      '  - Banner Image: ${selectedBannerImage != null ? "Selected" : "None"}',
-    );
-    debugPrint(
-      '  - Banner Text: ${bannerTextController.text.isNotEmpty ? "\"${bannerTextController.text.trim()}\"" : "None"}',
-    );
+    
+ 
 
     try {
       // Combine both types of add-ons
@@ -2245,7 +2120,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         };
       }
 
-      debugPrint('  - Total add-ons count: ${combinedAddOns.length}');
+      //('  - Total add-ons count: ${combinedAddOns.length}');
 
       // Navigate to booking details screen
       context.push(
@@ -2257,7 +2132,7 @@ class _ServiceBookingScreenState extends ConsumerState<ServiceBookingScreen> {
         },
       );
     } catch (e) {
-      debugPrint('❌ Navigation error: $e');
+      //('❌ Navigation error: $e');
       _showError('Unable to proceed. Please try again.');
     }
   }

@@ -69,7 +69,7 @@ class RecentSearchesNotifier extends StateNotifier<List<String>> {
       final searchesJson = prefs.getStringList(_storageKey) ?? [];
       state = searchesJson.take(_maxRecentSearches).toList();
     } catch (e) {
-      debugPrint('Failed to load recent searches: $e');
+      //('Failed to load recent searches: $e');
     }
   }
 
@@ -78,7 +78,7 @@ class RecentSearchesNotifier extends StateNotifier<List<String>> {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_storageKey, state);
     } catch (e) {
-      debugPrint('Failed to save recent searches: $e');
+      //('Failed to save recent searches: $e');
     }
   }
 
@@ -135,7 +135,7 @@ class SearchRepository {
     if (_searchCache.containsKey(cacheKey)) {
       final cached = _searchCache[cacheKey]!;
       if (!cached.isExpired) {
-        debugPrint('Returning cached search results for: $query');
+        //('Returning cached search results for: $query');
         return cached.data;
       } else {
         _searchCache.remove(cacheKey);
@@ -149,7 +149,7 @@ class SearchRepository {
 
     try {
       // Perform actual search
-      debugPrint('Performing live search for: $query');
+      //('Performing live search for: $query');
       final results = await _performLiveSearch(query);
       
       // Check if request was cancelled before caching
@@ -166,7 +166,7 @@ class SearchRepository {
 
       return results;
     } catch (e) {
-      debugPrint('Search error: $e');
+      //('Search error: $e');
       return <ServiceListingModel>[];
     }
   }
@@ -186,7 +186,7 @@ class SearchRepository {
 
       return filteredServices;
     } catch (e) {
-      debugPrint('Live search error: $e');
+      //('Live search error: $e');
       return <ServiceListingModel>[];
     }
   }

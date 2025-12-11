@@ -10,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:share_plus/share_plus.dart';
-
 import '../../../core/providers/welcome_providers.dart';
 import '../../../core/services/image_upload_service.dart';
 import '../../../core/theme/app_theme.dart';
@@ -31,52 +30,40 @@ import '../../wishlist/providers/wishlist_providers.dart';
 final serviceDetailProvider =
     FutureProvider.family.autoDispose<ServiceListingModel?, String>((ref, serviceId) async {
       try {
-        debugPrint('🔄 Fetching service details for ID: $serviceId');
         final repository = ref.watch(homeRepositoryProvider);
-        final selectedAddress = ref.watch(selectedAddressProvider);
 
+        // Watch selected address for location-based pricing
+        final selectedAddress = ref.watch(selectedAddressProvider);
+        final userLat = selectedAddress?.latitude;
+        final userLon = selectedAddress?.longitude;
+
+        debugPrint('🔍 ServiceDetailProvider: Fetching service $serviceId');
+        debugPrint('📍 User location: ($userLat, $userLon)');
+
+        // Fetch base service data
         final service = await repository.getServiceById(serviceId);
 
-        if (service != null) {
-          debugPrint('✅ Service loaded successfully:');
-          debugPrint('  - Name: ${service.name}');
-          debugPrint('  - Image: ${service.image}');
-          debugPrint('  - Photos count: ${service.photos?.length ?? 0}');
-          debugPrint('  - Category: ${service.category}');
-          debugPrint('  - Original Price: ${service.originalPrice}');
-          debugPrint('  - Offer Price: ${service.offerPrice}');
-          debugPrint('  - Free Service KM: ${service.freeServiceKm}');
-          debugPrint('  - Extra Charges Per KM: ${service.extraChargesPerKm}');
-          debugPrint('  - Service Location: (${service.latitude}, ${service.longitude})');
-
-          // Apply location-based pricing if user has selected an address
-          if (selectedAddress != null &&
-              selectedAddress.latitude != null &&
-              selectedAddress.longitude != null) {
-            debugPrint('🧮 Calculating location-based pricing...');
-            debugPrint('  - User location: (${selectedAddress.latitude}, ${selectedAddress.longitude})');
-
-            final serviceWithLocation = service.copyWithLocationData(
-              userLat: selectedAddress.latitude,
-              userLon: selectedAddress.longitude,
-            );
-
-            debugPrint('  - Distance: ${serviceWithLocation.distanceKm} km');
-            debugPrint('  - Calculated Price: ${serviceWithLocation.calculatedPrice}');
-            debugPrint('  - Adjusted Offer Price: ${serviceWithLocation.adjustedOfferPrice}');
-            debugPrint('  - Display Offer Price: ${serviceWithLocation.displayOfferPrice}');
-            debugPrint('  - Is Price Adjusted: ${serviceWithLocation.isPriceAdjusted}');
-
-            return serviceWithLocation;
-          }
-        } else {
-          debugPrint('❌ Service not found for ID: $serviceId');
+        if (service == null) {
+          debugPrint('❌ Service not found: $serviceId');
+          return null;
         }
 
+        // If user has location and service has valid location, apply location-based pricing
+        if (userLat != null && userLon != null && service.hasValidLocation) {
+          debugPrint('✅ Applying location-based pricing for service: ${service.name}');
+          final serviceWithLocation = service.copyWithLocationData(
+            userLat: userLat,
+            userLon: userLon,
+          );
+          debugPrint('📍 Distance: ${serviceWithLocation.distanceKm} km');
+          debugPrint('💰 Calculated Price: ${serviceWithLocation.calculatedPrice}');
+          return serviceWithLocation;
+        }
+
+        debugPrint('⚠️ No location-based pricing applied');
         return service;
       } catch (e, stackTrace) {
-        debugPrint('❌ Error fetching service details for ID: $serviceId');
-        debugPrint('Error: $e');
+        debugPrint('Error fetching service details: $e');
         debugPrint('StackTrace: $stackTrace');
         rethrow;
       }
@@ -108,9 +95,9 @@ final relatedServicesProvider =
       params,
     ) async {
       try {
-        debugPrint('🔄 Fetching related services for:');
-        debugPrint('  - Service ID: ${params.serviceId}');
-        debugPrint('  - Category: ${params.category}');
+        //('🔄 Fetching related services for:');
+        //('  - Service ID: ${params.serviceId}');
+        //('  - Category: ${params.category}');
 
         final repository = ref.watch(homeRepositoryProvider);
 
@@ -119,8 +106,8 @@ final relatedServicesProvider =
         final userLat = selectedAddress?.latitude;
         final userLon = selectedAddress?.longitude;
 
-        debugPrint('📍 Related Services: User location: ($userLat, $userLon)');
-        debugPrint('📍 Selected address: ${selectedAddress?.address}');
+        //('📍 Related Services: User location: ($userLat, $userLon)');
+        //('📍 Selected address: ${selectedAddress?.address}');
 
         // Fetch related services (repository will handle location filtering if coordinates provided)
         final relatedServices = await repository.getRelatedServices(
@@ -130,7 +117,7 @@ final relatedServicesProvider =
 
         // If user has location, apply client-side filtering for 20km radius and add location data
         if (userLat != null && userLon != null && relatedServices.isNotEmpty) {
-          debugPrint('📍 Applying 20km radius filter and location data to ${relatedServices.length} services');
+          //('📍 Applying 20km radius filter and location data to ${relatedServices.length} services');
 
           final servicesWithLocation = relatedServices
               .map((service) => service.copyWithLocationData(
@@ -140,7 +127,7 @@ final relatedServicesProvider =
               .where((service) => service.distanceKm != null && service.distanceKm! <= 20.0) // 20km radius
               .toList();
 
-          debugPrint('📍 ${servicesWithLocation.length} services within 20km radius');
+          //('📍 ${servicesWithLocation.length} services within 20km radius');
 
           // Sort by distance (nearest first)
           servicesWithLocation.sort((a, b) {
@@ -152,18 +139,18 @@ final relatedServicesProvider =
           return servicesWithLocation;
         }
 
-        debugPrint('✅ Related services loaded: ${relatedServices.length} items (no location filtering)');
+        //('✅ Related services loaded: ${relatedServices.length} items (no location filtering)');
         for (var service in relatedServices.take(3)) {
-          debugPrint('  - ${service.name} (${service.id})');
+          //('  - ${service.name} (${service.id})');
         }
 
         return relatedServices;
       } catch (e, stackTrace) {
-        debugPrint('❌ Error fetching related services:');
-        debugPrint('  - Service ID: ${params.serviceId}');
-        debugPrint('  - Category: ${params.category}');
-        debugPrint('  - Error: $e');
-        debugPrint('  - StackTrace: $stackTrace');
+        //('❌ Error fetching related services:');
+        //('  - Service ID: ${params.serviceId}');
+        //('  - Category: ${params.category}');
+        //('  - Error: $e');
+        //('  - StackTrace: $stackTrace');
         rethrow;
       }
     });
@@ -225,7 +212,7 @@ class ServiceAddon {
 final serviceAddonsProvider = FutureProvider.family<List<ServiceAddon>, String>(
   (ref, vendorId) async {
     try {
-      debugPrint('🔄 Fetching service addons for vendor ID: $vendorId');
+      //('🔄 Fetching service addons for vendor ID: $vendorId');
 
       final repository = ref.watch(homeRepositoryProvider);
       final response = await repository.getServiceAddons(vendorId);
@@ -234,17 +221,17 @@ final serviceAddonsProvider = FutureProvider.family<List<ServiceAddon>, String>(
           .map((json) => ServiceAddon.fromJson(json))
           .toList();
 
-      debugPrint('✅ Service addons loaded: ${addons.length} items');
+      //('✅ Service addons loaded: ${addons.length} items');
       for (var addon in addons.take(3)) {
-        debugPrint('  - ${addon.name} (₹${addon.price})');
+        //('  - ${addon.name} (₹${addon.price})');
       }
 
       return addons;
     } catch (e, stackTrace) {
-      debugPrint('❌ Error fetching service addons:');
-      debugPrint('  - Vendor ID: $vendorId');
-      debugPrint('  - Error: $e');
-      debugPrint('  - StackTrace: $stackTrace');
+      //('❌ Error fetching service addons:');
+      //('  - Vendor ID: $vendorId');
+      //('  - Error: $e');
+      //('  - StackTrace: $stackTrace');
       return []; // Return empty list instead of throwing error
     }
   },
@@ -292,23 +279,8 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If service was passed from previous screen, use it directly
-    if (widget.service != null) {
-      debugPrint('✅ Using pre-calculated service from navigation');
-      debugPrint('  - Service: ${widget.service!.name}');
-      debugPrint('  - Offer Price: ${widget.service!.offerPrice}');
-      debugPrint('  - Display Offer Price: ${widget.service!.displayOfferPrice}');
-      debugPrint('  - Calculated Price: ${widget.service!.calculatedPrice}');
-      debugPrint('  - Distance: ${widget.service!.distanceKm} km');
-
-      return Scaffold(
-        backgroundColor: Colors.white,
-        body: _buildServiceDetail(widget.service!),
-      );
-    }
-
-    // Otherwise fetch from database (fallback for direct navigation)
-    debugPrint('⚠️ Service not passed, fetching from database...');
+    // Provider now automatically applies location-based pricing
+    // It watches selectedAddressProvider and applies copyWithLocationData
     final serviceDetailAsync = ref.watch(
       serviceDetailProvider(widget.serviceId),
     );
@@ -336,10 +308,6 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
             );
           }
 
-          debugPrint(
-            '✅ Service detail screen rendering with service: ${service.name}',
-          );
-
           return _buildServiceDetail(service);
         },
       ),
@@ -347,16 +315,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
   }
 
   Widget _buildServiceDetail(ServiceListingModel service) {
-    // Log service data usage
-    debugPrint('🏗️ Building service detail for: ${service.name}');
-    debugPrint('  - Has photos: ${service.photos?.isNotEmpty == true}');
-    debugPrint('  - Has image: ${service.image?.isNotEmpty ?? false}');
-    debugPrint(
-      '  - Has pricing: original=${service.originalPrice}, offer=${service.offerPrice}, display=${service.displayOfferPrice}',
-    );
-    debugPrint('  - Distance: ${service.distanceKm} km');
-    debugPrint('  - Calculated Price: ${service.calculatedPrice}');
-
+   
     // Use fetched service data with fallbacks for backward compatibility
     final serviceName = service.name.isNotEmpty
         ? service.name
@@ -470,9 +429,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                 final imageUrl = imageList[index];
                 final isNetworkImage = imageUrl.startsWith('http');
 
-                debugPrint(
-                  'Loading main image $index: $imageUrl (isNetwork: $isNetworkImage)',
-                );
+              
 
                 return Hero(
                   tag: 'service_detail_${widget.serviceId}',
@@ -490,9 +447,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                               ),
                             ),
                             errorWidget: (context, url, error) {
-                              debugPrint(
-                                'Main image load error for $url: $error',
-                              );
+                              
                               return Container(
                                 color: Colors.grey[200],
                                 child: const Center(
@@ -585,9 +540,8 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                                 placeholder: (context, url) =>
                                     Container(color: Colors.grey[200]),
                                 errorWidget: (context, url, error) {
-                                  debugPrint(
-                                    'Thumbnail image error for ${imageList[entry.key]}: $error',
-                                  );
+                                
+                                  
                                   return Container(
                                     color: Colors.grey[200],
                                     child: const Icon(
@@ -744,12 +698,12 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              _buildPriceSectionHorizontal(originalPrice, offerPrice),
+              _buildPriceSectionHorizontal(service, originalPrice, offerPrice),
               const SizedBox(width: 12),
               if (offerPrice != null &&
                   originalPrice != null &&
                   offerPrice < originalPrice)
-                _buildDiscountTag(originalPrice, offerPrice, promotionalTag),
+                _buildDiscountTag(service, originalPrice, offerPrice, promotionalTag),
             ],
           ),
           const SizedBox(height: 4),
@@ -787,17 +741,24 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
   }
 
   Widget _buildPriceSectionHorizontal(
+    ServiceListingModel service,
     double? originalPrice,
     double? offerPrice,
   ) {
+    // Check if prices are already calculated from RPC (home screen or detail screen)
+    final bool usePrecalculatedPrices = service.calculatedPrice != null ||
+                                         service.isPriceAdjusted == true;
+
     if (offerPrice != null &&
         originalPrice != null &&
         offerPrice < originalPrice) {
-      // Calculate tax-inclusive prices
-      final taxInclusiveOfferPrice =
-          PriceCalculator.calculateTotalPriceWithTaxes(offerPrice);
-      final taxInclusiveOriginalPrice =
-          PriceCalculator.calculateTotalPriceWithTaxes(originalPrice);
+      // Use pre-calculated prices directly if from RPC, otherwise calculate taxes
+      final taxInclusiveOfferPrice = usePrecalculatedPrices
+          ? offerPrice  // Already includes location fees and taxes from RPC
+          : PriceCalculator.calculateTotalPriceWithTaxes(offerPrice);
+      final taxInclusiveOriginalPrice = usePrecalculatedPrices
+          ? originalPrice  // Already includes location fees and taxes from RPC
+          : PriceCalculator.calculateTotalPriceWithTaxes(originalPrice);
 
       // Show discounted price horizontally with tax-inclusive amounts
       return Column(
@@ -840,10 +801,10 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
         ],
       );
     } else if (originalPrice != null) {
-      // Calculate tax-inclusive price for regular pricing
-      final taxInclusivePrice = PriceCalculator.calculateTotalPriceWithTaxes(
-        originalPrice,
-      );
+      // Use pre-calculated price if available, otherwise calculate taxes
+      final taxInclusivePrice = usePrecalculatedPrices
+          ? originalPrice  // Already includes location fees and taxes from RPC
+          : PriceCalculator.calculateTotalPriceWithTaxes(originalPrice);
 
       // Show regular price with tax-inclusive amount
       return Column(
@@ -876,18 +837,25 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
   }
 
   Widget _buildDiscountTag(
+    ServiceListingModel service,
     double? originalPrice,
     double? offerPrice,
     String? promotionalTag,
   ) {
+    // Check if prices are already calculated (from home screen RPC)
+    final bool usePrecalculatedPrices = service.calculatedPrice != null ||
+                                         service.isPriceAdjusted == true;
+
     if (offerPrice != null &&
         originalPrice != null &&
         offerPrice < originalPrice) {
-      // Calculate savings based on tax-inclusive prices
-      final taxInclusiveOriginalPrice =
-          PriceCalculator.calculateTotalPriceWithTaxes(originalPrice);
-      final taxInclusiveOfferPrice =
-          PriceCalculator.calculateTotalPriceWithTaxes(offerPrice);
+      // Calculate savings - use pre-calculated prices if available
+      final taxInclusiveOriginalPrice = usePrecalculatedPrices
+          ? originalPrice
+          : PriceCalculator.calculateTotalPriceWithTaxes(originalPrice);
+      final taxInclusiveOfferPrice = usePrecalculatedPrices
+          ? offerPrice
+          : PriceCalculator.calculateTotalPriceWithTaxes(offerPrice);
       final savings = (taxInclusiveOriginalPrice - taxInclusiveOfferPrice)
           .round();
 
@@ -1025,7 +993,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
             child: Center(child: CircularProgressIndicator(color: Colors.pink)),
           ),
           error: (error, stack) {
-            debugPrint('Addons error: $error');
+            //('Addons error: $error');
             return const SizedBox.shrink(); // Hide section on error
           },
           data: (addons) {
@@ -1293,7 +1261,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
   }
 
   void _handleAddonAdd(ServiceAddon addon) {
-    debugPrint('Adding addon: ${addon.name} (₹${addon.price})');
+    //('Adding addon: ${addon.name} (₹${addon.price})');
 
     // Only show customization dialog for customizable addons
     if (addon.isCustomizable) {
@@ -1305,14 +1273,14 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
   }
 
   void _handleAddonEdit(ServiceAddon addon) {
-    debugPrint('Editing addon: ${addon.name}');
+    //('Editing addon: ${addon.name}');
 
     // Show customization dialog with existing data for editing
     _showCustomizationDialog(addon, isEdit: true);
   }
 
   void _addNonCustomizableAddon(ServiceAddon addon) {
-    debugPrint('Adding non-customizable addon: ${addon.name}');
+    //('Adding non-customizable addon: ${addon.name}');
 
     // Calculate total price including transaction fee (same as what user sees in UI)
     final totalPriceWithFeesRaw = addon.price + (addon.price * 0.0354);
@@ -1610,11 +1578,9 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
   ) {
     final bool isEdit = _addedAddons.containsKey(addon.id);
 
-    debugPrint(
-      '${isEdit ? 'Updating' : 'Adding'} customized addon: ${addon.name}',
-    );
-    debugPrint('Custom value: $customValue');
-    debugPrint('Total price: ₹$totalPrice');
+   
+    //('Custom value: $customValue');
+    //('Total price: ₹$totalPrice');
 
     // Store/Update addon data
     setState(() {
@@ -1677,75 +1643,13 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
             debugPrint('Related services error: $error');
             debugPrint('Service category: ${currentService.category}');
             debugPrint('Current service ID: ${widget.serviceId}');
-            // Show error state instead of hiding
-            return Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'You might like / More like this',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Okra',
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Text(
-                      'Unable to load related services',
-                      style: TextStyle(color: Colors.grey, fontFamily: 'Okra'),
-                    ),
-                  ),
-                ],
-              ),
-            );
+            // Hide section on error
+            return const SizedBox.shrink();
           },
           data: (relatedServices) {
-            debugPrint(
-              'Related services loaded: ${relatedServices.length} items',
-            );
+            // Hide section if no related services
             if (relatedServices.isEmpty) {
-              // Show message instead of hiding section
-              return Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'You might like / More like this',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'Okra',
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Text(
-                        'No related services found',
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontFamily: 'Okra',
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return const SizedBox.shrink();
             }
 
             return Padding(
@@ -1778,18 +1682,10 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                         : relatedServices.length,
                     itemBuilder: (context, index) {
                       final service = relatedServices[index];
-                      final price = service.offerPrice != null
-                          ? PriceCalculator.formatPriceAsInt(
-                              PriceCalculator.calculateTotalPriceWithTaxes(
-                                service.offerPrice!,
-                              ),
-                            )
-                          : service.originalPrice != null
-                          ? PriceCalculator.formatPriceAsInt(
-                              PriceCalculator.calculateTotalPriceWithTaxes(
-                                service.originalPrice!,
-                              ),
-                            )
+                      final price = service.displayOfferPrice != null
+                          ? PriceCalculator.formatPriceAsInt(service.displayOfferPrice!)
+                          : service.displayOriginalPrice != null
+                          ? PriceCalculator.formatPriceAsInt(service.displayOriginalPrice!)
                           : 'Price on request';
 
                       return GestureDetector(
@@ -1893,9 +1789,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
                                                 const SizedBox(width: 8),
                                                 Text(
                                                   PriceCalculator.formatPriceAsInt(
-                                                    PriceCalculator.calculateTotalPriceWithTaxes(
-                                                      service.displayOriginalPrice ?? service.originalPrice!,
-                                                    ),
+                                                    service.displayOriginalPrice ?? service.originalPrice!,
                                                   ),
                                                   style: TextStyle(
                                                     fontSize: 12,
@@ -1973,7 +1867,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
       imageUrl = _placeholderImage;
     }
 
-    debugPrint('Related service image for ${service.name}: $imageUrl');
+    //('Related service image for ${service.name}: $imageUrl');
 
     if (imageUrl == _placeholderImage) {
       return Container(
@@ -2004,7 +1898,7 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
         ),
       ),
       errorWidget: (context, url, error) {
-        debugPrint('Related service image error for ${service.name}: $error');
+        //('Related service image error for ${service.name}: $error');
         return Container(
           color: Colors.grey[200],
           child: const Center(
@@ -2173,32 +2067,25 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
 
   Future<VendorModel?> _fetchVendor(String? vendorId) async {
     if (vendorId == null || vendorId.isEmpty) {
-      debugPrint('🔍 ServiceDetailScreen: Vendor ID is null or empty');
+      //('🔍 ServiceDetailScreen: Vendor ID is null or empty');
       return null;
     }
 
     try {
-      debugPrint('🔍 ServiceDetailScreen: Fetching vendor with ID: $vendorId');
       final repo = ref.read(homeRepositoryProvider);
       final vendor = await repo.getVendorById(vendorId);
 
       if (vendor == null) {
-        debugPrint(
-          '🔍 ServiceDetailScreen: Vendor not found or not accessible (ID: $vendorId)',
-        );
-        debugPrint(
-          '🔍 ServiceDetailScreen: This could be due to RLS policies or vendor being inactive',
-        );
+       
+       
       } else {
-        debugPrint(
-          '🔍 ServiceDetailScreen: Successfully fetched vendor: ${vendor.businessName}',
-        );
+        
       }
 
       return vendor;
     } catch (e, stackTrace) {
-      debugPrint('❌ ServiceDetailScreen: Error fetching vendor $vendorId: $e');
-      debugPrint('❌ ServiceDetailScreen: Stack trace: $stackTrace');
+      //('❌ ServiceDetailScreen: Error fetching vendor $vendorId: $e');
+      //('❌ ServiceDetailScreen: Stack trace: $stackTrace');
       return null;
     }
   }
@@ -2251,25 +2138,28 @@ class _ServiceDetailScreenState extends ConsumerState<ServiceDetailScreen> {
       String priceText = 'Price on request';
 
       if (service != null) {
+        // Use RPC-calculated display prices when available (they already include all fees)
+        final bool usePrecalculatedPrices = service.calculatedPrice != null ||
+                                             service.isPriceAdjusted == true;
+
         if (service.offerPrice != null) {
-          final taxInclusiveOfferPrice =
-              PriceCalculator.calculateTotalPriceWithTaxes(service.offerPrice!);
+          final taxInclusiveOfferPrice = usePrecalculatedPrices && service.displayOfferPrice != null
+              ? service.displayOfferPrice!
+              : PriceCalculator.calculateTotalPriceWithTaxes(service.offerPrice!);
           priceText = PriceCalculator.formatPriceAsInt(taxInclusiveOfferPrice);
           if (service.originalPrice != null &&
               service.originalPrice! > service.offerPrice!) {
-            final taxInclusiveOriginalPrice =
-                PriceCalculator.calculateTotalPriceWithTaxes(
-                  service.originalPrice!,
-                );
+            final taxInclusiveOriginalPrice = usePrecalculatedPrices && service.displayOriginalPrice != null
+                ? service.displayOriginalPrice!
+                : PriceCalculator.calculateTotalPriceWithTaxes(service.originalPrice!);
             final savings = (taxInclusiveOriginalPrice - taxInclusiveOfferPrice)
                 .round();
             priceText += ' (Save ₹${_formatNumberWithCommas(savings)})';
           }
         } else if (service.originalPrice != null) {
-          final taxInclusivePrice =
-              PriceCalculator.calculateTotalPriceWithTaxes(
-                service.originalPrice!,
-              );
+          final taxInclusivePrice = usePrecalculatedPrices && service.displayOriginalPrice != null
+              ? service.displayOriginalPrice!
+              : PriceCalculator.calculateTotalPriceWithTaxes(service.originalPrice!);
           priceText = PriceCalculator.formatPriceAsInt(taxInclusivePrice);
         }
       }
@@ -2424,50 +2314,39 @@ class _CustomizationBottomSheetState
     // Initialize add-ons from service data
     availableAddOns = widget.service.addOns ?? [];
 
-    debugPrint('🎨 Bottom sheet initialized with:');
-    debugPrint('  - Venue types: $venueTypes');
-    debugPrint('  - Service environments: $serviceEnvironments');
-    debugPrint('  - Available add-ons: ${availableAddOns.length}');
+    //('🎨 Bottom sheet initialized with:');
+    //('  - Venue types: $venueTypes');
+    //('  - Service environments: $serviceEnvironments');
+    //('  - Available add-ons: ${availableAddOns.length}');
   }
 
   Future<void> _loadVendorAndBuildTimeSlots() async {
     try {
-      debugPrint('🕒 ===== STARTING VENDOR LOAD =====');
+      //('🕒 ===== STARTING VENDOR LOAD =====');
       final repo = ref.read(homeRepositoryProvider);
       final vendorId = widget.service.vendorId;
-      debugPrint('🕒 Service vendor ID: $vendorId');
-      debugPrint('🕒 Service ID: ${widget.service.id}');
-      debugPrint('🕒 Service name: ${widget.service.name}');
+      //('🕒 Service vendor ID: $vendorId');
+      //('🕒 Service ID: ${widget.service.id}');
+      //('🕒 Service name: ${widget.service.name}');
 
       if (vendorId == null) {
-        debugPrint('❌ Vendor ID is null for service ${widget.service.id}');
+        //('❌ Vendor ID is null for service ${widget.service.id}');
         setState(() {
           timeSlots = [];
         });
         return;
       }
 
-      debugPrint('🕒 Calling repo.getVendorById($vendorId)');
+      //('🕒 Calling repo.getVendorById($vendorId)');
       final vendor = await repo.getVendorById(vendorId);
-      debugPrint('🕒 Repository returned vendor: $vendor');
+      //('🕒 Repository returned vendor: $vendor');
 
       _vendor = vendor;
       _isVendorOnline = vendor?.isOnline ?? false;
       _vendorStartTime = vendor?.startTime; // expected HH:mm or HH:mm:ss
       _vendorCloseTime = vendor?.closeTime; // expected HH:mm or HH:mm:ss
 
-      debugPrint('🕒 ===== VENDOR DEBUG INFO =====');
-      debugPrint('🕒 Vendor ID: $vendorId');
-      debugPrint('🕒 Vendor from DB: $vendor');
-      debugPrint('🕒 Raw isOnline value: ${vendor?.isOnline}');
-      debugPrint('🕒 Parsed _isVendorOnline: $_isVendorOnline');
-      debugPrint(
-        '🕒 Business hours: ${_vendorStartTime ?? 'null'} to ${_vendorCloseTime ?? 'null'}',
-      );
-      debugPrint(
-        '🕒 Advance booking hours: ${vendor?.advanceBookingHours ?? 'null'}',
-      );
-      debugPrint('🕒 ===============================');
+     
 
       // Determine advance booking hours: try from service.bookingNotice (parse hours), else vendor setting, else default 2
       _advanceBookingHours =
@@ -2478,8 +2357,8 @@ class _CustomizationBottomSheetState
       setState(() {});
       _rebuildTimeSlotsForSelectedDate();
     } catch (e, stackTrace) {
-      debugPrint('❌ Failed to load vendor/time slots: $e');
-      debugPrint('❌ Stack trace: $stackTrace');
+      //('❌ Failed to load vendor/time slots: $e');
+      //('❌ Stack trace: $stackTrace');
       setState(() {
         timeSlots = [];
       });
@@ -2499,16 +2378,9 @@ class _CustomizationBottomSheetState
   }
 
   void _rebuildTimeSlotsForSelectedDate() {
-    debugPrint('🕒 _rebuildTimeSlotsForSelectedDate called');
-    debugPrint('🕒 Vendor online: $_isVendorOnline');
-    debugPrint(
-      '🕒 Start time: $_vendorStartTime, Close time: $_vendorCloseTime',
-    );
-    debugPrint('🕒 Selected date: $selectedDate');
-
-    // If vendor is offline, do not show time slots
+ 
+  
     if (!_isVendorOnline) {
-      debugPrint('🕒 Vendor is offline, clearing time slots');
       setState(() {
         timeSlots = [];
       });
@@ -2517,7 +2389,6 @@ class _CustomizationBottomSheetState
 
     // Require vendor business hours
     if (_vendorStartTime == null || _vendorCloseTime == null) {
-      debugPrint('🕒 Vendor has no business hours set, clearing time slots');
       setState(() {
         timeSlots = [];
       });
@@ -2591,23 +2462,21 @@ class _CustomizationBottomSheetState
     final slots = <String>[];
     final formatter = DateFormat('hh:mm a');
     DateTime cursor = DateTime(sdt.year, sdt.month, sdt.day, sdt.hour, 0);
-    debugPrint(
-      '🕒 Generating time slots from ${formatter.format(sdt)} to ${formatter.format(edt)}',
-    );
-    debugPrint('🕒 Current time: ${formatter.format(now)}');
+  
+    //('🕒 Current time: ${formatter.format(now)}');
 
     while (cursor.isBefore(edt)) {
       // Only future times if date is today
       if (cursor.isAfter(now)) {
         slots.add(formatter.format(cursor));
-        debugPrint('🕒 Added time slot: ${formatter.format(cursor)}');
+        //('🕒 Added time slot: ${formatter.format(cursor)}');
       } else {
-        debugPrint('🕒 Skipped past time slot: ${formatter.format(cursor)}');
+        //('🕒 Skipped past time slot: ${formatter.format(cursor)}');
       }
       cursor = cursor.add(const Duration(hours: 1));
     }
 
-    debugPrint('🕒 Generated ${slots.length} time slots: $slots');
+    //('🕒 Generated ${slots.length} time slots: $slots');
     setState(() {
       timeSlots = slots;
       if (!timeSlots.contains(selectedTime)) {
@@ -2624,7 +2493,7 @@ class _CustomizationBottomSheetState
       // Handle both HH:mm and HH:mm:ss formats from database
       return DateTime(date.year, date.month, date.day, h, m);
     } catch (e) {
-      debugPrint('❌ Error parsing time format "$hm": $e');
+      //('❌ Error parsing time format "$hm": $e');
       return null;
     }
   }
@@ -2646,11 +2515,9 @@ class _CustomizationBottomSheetState
           setState(() {
             selectedDate = formattedCelebrationDate;
           });
-          debugPrint('🎉 Auto-selected user celebration date: $selectedDate');
+          //('🎉 Auto-selected user celebration date: $selectedDate');
         } else {
-          debugPrint(
-            '🎉 User celebration date $formattedCelebrationDate not in available dates, keeping default',
-          );
+        
         }
 
         // Auto-select celebration time if available
@@ -2697,17 +2564,15 @@ class _CustomizationBottomSheetState
               setState(() {
                 selectedTime = matchingTimeSlot!;
               });
-              debugPrint(
-                '🎉 Auto-selected user celebration time: $selectedTime',
-              );
+            
             }
           } catch (e) {
-            debugPrint('Error parsing celebration time: $e');
+            //('Error parsing celebration time: $e');
           }
         }
       }
     } catch (e) {
-      debugPrint('Error loading user profile for auto-date selection: $e');
+      //('Error loading user profile for auto-date selection: $e');
     }
   }
 
@@ -2727,11 +2592,9 @@ class _CustomizationBottomSheetState
             setState(() {
               selectedDate = formattedSavedDate;
             });
-            debugPrint('🎯 Loaded saved celebration date: $selectedDate');
+            //('🎯 Loaded saved celebration date: $selectedDate');
           } else {
-            debugPrint(
-              '🎯 Saved date $formattedSavedDate not in available dates, keeping default',
-            );
+           
           }
         }
       }
@@ -2757,14 +2620,12 @@ class _CustomizationBottomSheetState
             setState(() {
               selectedTime = matchingTimeSlot!;
             });
-            debugPrint(
-              '🎯 Loaded saved celebration time: $selectedTime (from ${savedTime.hour}:${savedTime.minute})',
-            );
+           
           }
         }
       }
     } catch (e) {
-      debugPrint('Error loading welcome preferences: $e');
+      //('Error loading welcome preferences: $e');
     }
   }
 
@@ -3258,13 +3119,13 @@ class _CustomizationBottomSheetState
     // Show helpful message when time slots are not available
     String displayHint = hint;
     if (isTimeSlotDropdown && isEmpty) {
-      debugPrint('🕒 ===== DROPDOWN DEBUG =====');
-      debugPrint('🕒 _vendor: $_vendor');
-      debugPrint('🕒 _isVendorOnline: $_isVendorOnline');
-      debugPrint('🕒 _vendorStartTime: $_vendorStartTime');
-      debugPrint('🕒 _vendorCloseTime: $_vendorCloseTime');
-      debugPrint('🕒 timeSlots.length: ${timeSlots.length}');
-      debugPrint('🕒 ==========================');
+      //('🕒 ===== DROPDOWN DEBUG =====');
+      //('🕒 _vendor: $_vendor');
+      //('🕒 _isVendorOnline: $_isVendorOnline');
+      //('🕒 _vendorStartTime: $_vendorStartTime');
+      //('🕒 _vendorCloseTime: $_vendorCloseTime');
+      //('🕒 timeSlots.length: ${timeSlots.length}');
+      //('🕒 ==========================');
 
       // Check if vendor data is still loading
       if (_vendor == null) {
@@ -3513,12 +3374,12 @@ class _CustomizationBottomSheetState
         isUploadingImage = false;
       });
 
-      debugPrint('✅ Image selected: ${pickedImage.path}');
+      //('✅ Image selected: ${pickedImage.path}');
     } catch (e) {
       setState(() {
         isUploadingImage = false;
       });
-      debugPrint('❌ Error selecting image: $e');
+      //('❌ Error selecting image: $e');
       _showError('Failed to select image. Please try again.');
     }
   }
@@ -3550,13 +3411,13 @@ class _CustomizationBottomSheetState
 
     // Validate service essential fields
     if (widget.service.id.isEmpty) {
-      debugPrint('❌ Service ID is empty');
+      //('❌ Service ID is empty');
       _showError('Invalid service. Please try again.');
       return;
     }
 
     if (widget.service.name.isEmpty) {
-      debugPrint('❌ Service name is empty');
+      //('❌ Service name is empty');
       _showError('Service information incomplete. Please try again.');
       return;
     }
@@ -3564,7 +3425,7 @@ class _CustomizationBottomSheetState
     // Check pricing information
     if (widget.service.originalPrice == null &&
         widget.service.offerPrice == null) {
-      debugPrint('⚠️ Service has no pricing information');
+      //('⚠️ Service has no pricing information');
     }
 
     // Create comprehensive customization data
@@ -3582,19 +3443,8 @@ class _CustomizationBottomSheetState
       'placeImage': selectedPlaceImage, // Add the selected image
     };
 
-    debugPrint('✅ Navigating to checkout with enhanced data:');
-    debugPrint('  - Service: ${widget.service.name} (${widget.service.id})');
-    debugPrint('  - Venue: $selectedVenueType');
-    debugPrint('  - Environment: $selectedEnvironment');
-    debugPrint('  - Date & Time: $selectedDate at $selectedTime');
-    debugPrint('  - Simple Add-ons: $selectedAddOns');
-    debugPrint('  - Complex Add-ons: ${widget.addedAddons.keys.toList()}');
-    debugPrint(
-      '  - Comments: ${commentsController.text.isNotEmpty ? "Added" : "None"}',
-    );
-    debugPrint(
-      '  - Place Image: ${selectedPlaceImage != null ? "Selected" : "None"}',
-    );
+    
+ 
 
     try {
       // Close bottom sheet first
@@ -3631,10 +3481,7 @@ class _CustomizationBottomSheetState
         };
       }
 
-      debugPrint(
-        '  - Combined Add-ons for checkout: ${combinedAddOns.keys.toList()}',
-      );
-      debugPrint('  - Total add-ons count: ${combinedAddOns.length}');
+  
 
       // Navigate to checkout with enhanced data including separate date and time parameters
       context.push(
@@ -3651,7 +3498,7 @@ class _CustomizationBottomSheetState
         },
       );
     } catch (e) {
-      debugPrint('❌ Navigation error: $e');
+      //('❌ Navigation error: $e');
       _showError('Unable to proceed to checkout. Please try again.');
     }
   }
